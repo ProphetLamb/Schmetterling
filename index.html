@@ -4,8 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Schmetterling</title>
+
+    <link data-trunk rel="scss" href="src/style.scss" />
+    <base data-trunk-public-url />
   </head>
   <body>
-    <script src="/schmetterling.js"></script>
+    <link data-trunk rel="rust" href="Cargo.toml" data-wasm-opt="z" />
   </body>
 </html>
