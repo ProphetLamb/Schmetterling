@@ -1,21 +1,28 @@
 {
-  "private": true,
+  "name": "schmetterling",
+  "version": "0.1.0",
+  "description": "",
+  "main": "src/main.rs",
   "scripts": {
-    "dev": "webpack-dev-server --mode development --open",
-    "build": "webpack --mode production",
-    "build:dev": "webpack --mode development",
-    "test": "wasm-pack test --chrome --firefox --safari --headless"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ProphetLamb/Schmetterling.git"
+  },
+  "keywords": [
+    "rust",
+    "wasm",
+    "yew",
+    "trunk"
+  ],
+  "author": "ProphetLamb",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ProphetLamb/Schmetterling/issues"
+  },
+  "homepage": "https://github.com/ProphetLamb/Schmetterling#readme",
   "dependencies": {
-    "@wasm-tool/wasm-pack-plugin": "^1.6.0",
-    "copy-webpack-plugin": "^10.2.4",
-    "css-loader": "^6.6.0",
-    "sass": "^1.49.7",
-    "sass-loader": "^12.4.0",
-    "style-loader": "^3.3.1",
-    "wasm-pack": "^0.10.2",
-    "webpack": "^5.68.0",
-    "webpack-cli": "^4.9.2",
-    "webpack-dev-server": "^4.7.4"
+    "bootstrap": "^5.1.3"
   }
 }

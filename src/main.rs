@@ -1,23 +1,38 @@
-#![recursion_limit = "512"]
+#![recursion_limit = "1024"]
+use crate::components::*;
+
+pub mod components;
 
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-mod app;
-mod components;
-//mod routes;
-
 use wasm_bindgen::prelude::*;
+use yew::prelude::*;
 
-#[wasm_bindgen(inline_js = "export function snippetTest() { console.log('Hello from JS FFI!'); }")]
-extern "C" {
-    fn snippetTest();
+struct App;
+
+impl Component for App {
+    type Message = ();
+
+    type Properties = ();
+
+    fn create(ctx: &Context<Self>) -> Self {
+        Self {}
+    }
+
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        html! {
+            <>
+            <Header/>
+            <Imprint/>
+            <Footer/>
+            </>
+        }
+    }
 }
 
-#[wasm_bindgen]
-pub fn main() {
+fn main() {
     console_error_panic_hook::set_once();
-    snippetTest();
-    wasm_logger::init(wasm_logger::Config::default());
-    yew::start_app::<app::App>();
+
+    yew::start_app::<App>();
 }
