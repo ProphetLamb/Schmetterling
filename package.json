@@ -1,20 +1,13 @@
 {
-  "name": "schmetterling",
-  "version": "0.1.0",
-  "description": "",
-  "main": "src/main.rs",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ProphetLamb/Schmetterling.git"
   },
   "keywords": [
     "rust",
-    "wasm",
+    "trunk",
     "yew",
-    "trunk"
+    "wasm"
   ],
   "author": "ProphetLamb",
   "license": "MIT",
