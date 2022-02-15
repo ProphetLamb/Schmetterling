@@ -1,4 +1,3 @@
-use log::error;
 use web_sys::HtmlTextAreaElement;
 use yew::{prelude::*, virtual_dom::VNode};
 
@@ -38,12 +37,10 @@ impl Component for Edt {
 
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         Self {
             markup: Markup::Markdown("".to_string()),
-            html: Markup::Html("Placeholder".to_string())
-                .to_html()
-                .expect("Placeholder to html"),
+            html: Markup::Html("Placeholder".to_string()).to_html(),
             state: State::View,
         }
     }
@@ -78,18 +75,12 @@ impl Component for Edt {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::View => match self.markup.to_html() {
-                Ok(html) => {
-                    self.html = html;
-                    true
-                }
-                Err(err) => {
-                    error!("Failed to generate HTML DOM from {}. {}", self.markup, err);
-                    false
-                }
-            },
+            Msg::View => {
+                self.html = self.markup.to_html();
+                true
+            }
             Msg::Edit => true,
             Msg::Update(markup) => {
                 self.markup = self.markup.with_text(markup);

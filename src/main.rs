@@ -40,17 +40,17 @@ impl Component for App {
 
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         Self {}
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self, _ctx: &Context<Self>) -> Html {
         html! {
         <BrowserRouter>
             <header class="p-3"><div class="container">
                 <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
                     <a class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none" href="/">
-                        <img class="bi me-2" width="40" height="32" role="img" aria-label="Schmetterling" src="favicon.svg"/>
+                        <img class="bi me-2" width="40" height="32" role="img" aria-label="Schmetterling" src="favicon.svg" alt="Schmetterling"/>
                     </a>
                     <span>{"Schmetterling"}</span>
                 </div>
