@@ -142,6 +142,8 @@ pub fn render_markdown(src: &str) -> Html {
 
     let mut options = Options::empty();
     options.insert(Options::ENABLE_TABLES);
+    options.insert(Options::ENABLE_SMART_PUNCTUATION);
+    options.insert(Options::ENABLE_STRIKETHROUGH);
 
     for ev in Parser::new_ext(src, options) {
         match ev {
@@ -158,18 +160,12 @@ pub fn render_markdown(src: &str) -> Html {
                     pre.add_child(top.into());
                     top = pre;
                 } else if let Tag::Table(aligns) = tag {
-                    for r in top
-                        .children_mut()
-                        .iter_mut()
-                        .map(|ch| ch.iter_mut())
-                        .flatten()
-                    {
+                    for r in top.children_mut().iter_mut().flat_map(|ch| ch.iter_mut()) {
                         if let VNode::VTag(ref mut vtag) = r {
                             for (i, c) in vtag
                                 .children_mut()
                                 .iter_mut()
-                                .map(|ch| ch.iter_mut())
-                                .flatten()
+                                .flat_map(|ch| ch.iter_mut())
                                 .enumerate()
                             {
                                 if let VNode::VTag(ref mut vtag) = c {
@@ -184,12 +180,7 @@ pub fn render_markdown(src: &str) -> Html {
                         }
                     }
                 } else if let Tag::TableHead = tag {
-                    for c in top
-                        .children_mut()
-                        .iter_mut()
-                        .map(|ch| ch.iter_mut())
-                        .flatten()
-                    {
+                    for c in top.children_mut().iter_mut().flat_map(|ch| ch.iter_mut()) {
                         if let VNode::VTag(ref mut vtag) = c {
                             // TODO
                             //                            vtag.tag = "th".into();
@@ -207,7 +198,7 @@ pub fn render_markdown(src: &str) -> Html {
             Event::Rule => add_child!(VTag::new("hr").into()),
             Event::SoftBreak => add_child!(VText::new("\n").into()),
             Event::HardBreak => add_child!(VTag::new("br").into()),
-            _ => println!("Unknown event: {:#?}", ev),
+            _ => log::error!("Unknown event: {:#?}", ev),
         }
     }
 
@@ -215,7 +206,7 @@ pub fn render_markdown(src: &str) -> Html {
         VNode::VTag(Box::new(elems.pop().unwrap()))
     } else {
         html! {
-            <div>{ for elems.into_iter() }</div>
+            { for elems.into_iter() }
         }
     }
 }

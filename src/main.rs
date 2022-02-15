@@ -65,12 +65,10 @@ impl Component for App {
                 </div>
             </main>
             <footer class="footer mt-auto py-3">
-            <div class="container-fluid">
-                <ul class="list-group list-group-horizontal">
-                    <li class="list-group-item"><a class="text-muted nav-link" href="https://github.com/ProphetLamb/Schmetterling">{"Copyright (c) 2022 ProphetLamb"}</a></li>
-                    <li class="list-group-item"><Link<Route> classes="text-muted nav-link" to={Route::Home}>{"Home"}</Link<Route>></li>
-                    <li class="list-group-item"><Link<Route> classes="text-muted nav-link" to={Route::Imprint}>{"Imprint"}</Link<Route>></li>
-                </ul>
+            <div class="d-flex justify-content-right flex-row flex-wrap">
+                <a class="text-muted nav-link" href="https://github.com/ProphetLamb/Schmetterling">{"Copyright (c) 2022 ProphetLamb"}</a>
+                <Link<Route> classes="text-muted nav-link" to={Route::Home}>{"Home"}</Link<Route>>
+                <Link<Route> classes="text-muted nav-link" to={Route::Imprint}>{"Imprint"}</Link<Route>>
             </div>
             </footer>
         </BrowserRouter>

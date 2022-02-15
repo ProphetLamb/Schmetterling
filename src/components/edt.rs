@@ -12,7 +12,14 @@ pub enum Msg {
 }
 
 #[derive(PartialEq)]
-pub enum State {
+pub struct State {
+    title: Html,
+    content: Html,
+    mode: Mode,
+}
+
+#[derive(PartialEq, Eq)]
+pub enum Mode {
     View,
     Edit,
 }
@@ -29,8 +36,6 @@ pub struct Props {
 
 pub struct Edt {
     props: Props,
-    title: Html,
-    content: Html,
     state: State,
 }
 
@@ -38,9 +43,9 @@ impl Edt {
     /// Whether the component of the current state accepts a specific message.
     pub fn accepts_msg(&self, msg: &Msg) -> bool {
         match msg {
-            Msg::View => self.state == State::Edit,
-            Msg::Edit => self.state == State::View,
-            Msg::UpdContent(_) | Msg::UpdTitle(_) => self.state == State::Edit,
+            Msg::View => self.state.mode == Mode::Edit,
+            Msg::Edit => self.state.mode == Mode::View,
+            Msg::UpdContent(_) | Msg::UpdTitle(_) => self.state.mode == Mode::Edit,
             Msg::Prop => true,
         }
     }
@@ -54,10 +59,12 @@ impl Component for Edt {
     fn create(ctx: &Context<Self>) -> Self {
         let props = ctx.props();
         Self {
-            title: props.title.to_dom(),
-            content: props.content.to_dom(),
             props: props.clone(),
-            state: State::View,
+            state: State {
+                title: props.title.to_dom(),
+                content: props.content.to_dom(),
+                mode: Mode::View,
+            },
         }
     }
 
@@ -70,13 +77,13 @@ impl Component for Edt {
 
         match msg {
             Msg::View => {
-                self.title = props.title.to_dom();
-                self.content = props.content.to_dom();
-                self.state = State::View;
+                self.state.title = props.title.to_dom();
+                self.state.content = props.content.to_dom();
+                self.state.mode = Mode::View;
                 true
             }
             Msg::Edit => {
-                self.state = State::Edit;
+                self.state.mode = Mode::Edit;
                 true
             }
             Msg::UpdContent(markup) => {
@@ -98,28 +105,33 @@ impl Component for Edt {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let link = ctx.link();
-        match self.state {
-            State::View => {
+        match self.state.mode {
+            Mode::View => {
                 let state_click = link.callback(move |_| Msg::Edit);
                 html! {
                 <div class="card border-secondary">
                 <div class="card-header bg-transparent">
                 <div class="d-flex justify-content-between flex-row flex-wrap">
-                    <span class="card-title css-truncate css-truncate-overflow">{self.title.to_owned()}</span>
+                    <span class="card-title css-truncate css-truncate-overflow">{self.state.title.to_owned()}</span>
                     <div class="d-flex ml-3">
-                    <svg onclick={state_click} class="mr-3" aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true">
-                    <path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path>
-                    </svg>
+                        <svg onclick={state_click} class="mr-3" height="16" viewBox="0 0 16 16" version="1.1" width="16" data-view-component="true">
+                        <path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path>
+                        </svg>
                     </div>
                 </div>
                 </div>
                 <div class="card-body">
-                    {self.content.to_owned()}
+                    {self.state.content.to_owned()}
                 </div>
                 </div>
                 }
             }
-            State::Edit => {
+            Mode::Edit => {
+                log::warn!(
+                    "title: {}, content: {}",
+                    self.props.content.markup().to_owned(),
+                    self.props.title.markup().to_owned()
+                );
                 let title_change = link.batch_callback(move |e: Event| {
                     e.target_dyn_into::<HtmlInputElement>()
                         .map(|area| Msg::UpdTitle(area.value()))
@@ -132,12 +144,12 @@ impl Component for Edt {
                 html! {
                 <div class="card border-primary">
                 <div class="card-header bg-transparent">
-                    <input type="text" class="card-title form-control" onchange={title_change} text={self.props.title.markup().to_owned()} />
+                    <input type="text" class="card-title form-control"  onchange={title_change} value={self.props.title.markup().to_owned()} />
                 </div>
-                <div class="card-body d-flex" style="flex-direction: column">
-                <textarea class="form-control" onchange={content_change}>{self.props.content.markup().to_owned()}</textarea>
-                <div class="d-flex justify-content-end mt-3">
-                <button class="btn btn-primary" onclick={state_click}>{"Submit"}</button>
+                    <div class="card-body d-flex" style="flex-direction: column">
+                        <textarea class="form-control" onchange={content_change} value={self.props.content.markup().to_owned()} />
+                    <div class="d-flex justify-content-end mt-3">
+                    <button class="btn btn-primary" onclick={state_click}>{"Submit"}</button>
                 </div>
                 </div>
                 </div>
