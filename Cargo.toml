@@ -15,5 +15,4 @@ yew = "0.19"
 yew-router = "0.16"
 serde = { version = "1.0", features = ["derive"] }
 pulldown-cmark = "0.9"
-web-sys = {version = "0.3", features = ["Document","DomParser","SupportedType"] }
-js-sys = "0.3"
+web-sys = {version = "0.3" }

@@ -1,12 +1,9 @@
 use std::fmt::{Display, Formatter};
 
-use js_sys::JsString;
 use pulldown_cmark::{html::push_html, *};
-use wasm_bindgen::{JsCast, JsStatic, JsValue};
-use web_sys::{DomParser, SupportedType};
-use yew::{virtual_dom::VNode, Html};
+use yew::prelude::*;
 
-use crate::markup;
+use crate::components::*;
 
 #[derive(PartialEq, Eq)]
 pub enum Markup {
@@ -40,11 +37,9 @@ impl Markup {
         }
     }
 
-    pub fn to_html(&self) -> Result<Html, JsString> {
-        // https://github.com/pvcresin/yew-markdown-preview/blob/master/src/app.rs
-        let mut md_parsed;
+    pub fn to_html(&self) -> Html {
         let html = match self {
-            Markup::Html(html) => html,
+            Markup::Html(html) => html.to_owned(),
             Markup::Markdown(md) => {
                 let mut options = Options::empty();
                 options.insert(Options::ENABLE_TABLES);
@@ -53,23 +48,13 @@ impl Markup {
                 options.insert(Options::ENABLE_TASKLISTS);
 
                 let parser = Parser::new_ext(md, options);
-                md_parsed = String::with_capacity(md.len());
+                let mut md_parsed = String::with_capacity(md.len());
                 push_html(&mut md_parsed, parser);
-                &md_parsed
+                md_parsed
             }
         };
-        let parser = DomParser::new().map_err(|v| safe_to_js_string(&v))?;
-        let doc = DomParser::parse_from_string(&parser, html.as_str(), SupportedType::TextHtml)
-            .map_err(|v| safe_to_js_string(&v))?;
-        Ok(VNode::VRef(doc.get_root_node()))
+        html!(<RawHtml inner_html={html}/>)
     }
-}
-
-fn safe_to_js_string(value: &JsValue) -> JsString {
-    value
-        .dyn_ref()
-        .unwrap_or(&JsString::from("unknown"))
-        .to_owned()
 }
 
 #[cfg(test)]
@@ -78,8 +63,6 @@ mod tests {
 
     #[test]
     pub fn test_markdown_dom() {
-        let _html = Markup::Html("Placeholder".to_string())
-            .to_html()
-            .expect("Placeholder to html");
+        let _html = Markup::Html("Placeholder".to_string()).to_html();
     }
 }
