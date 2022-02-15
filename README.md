@@ -16,3 +16,4 @@
 | Asset                                                                                             | License     |
 | ------------------------------------------------------------------------------------------------- | ----------- |
 | [Butterfly icons created by Victoruler - Flaticon](https://www.flaticon.com/free-icons/butterfly) | Attribution |
+| [fontawesome](https://fontawesome.com/license/free)                                               | CC BY 4.0   |

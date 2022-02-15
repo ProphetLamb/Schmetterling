@@ -1,9 +1,26 @@
 @charset "utf-8";
 
+// Bootstrap
 @import "../node_modules/bootstrap/scss/bootstrap";
 @import "../node_modules/bootstrap/scss/functions";
 @import "../node_modules/bootstrap/scss/variables";
 @import "../node_modules/bootstrap/scss/mixins";
+
+// Truncate
+.css-truncate.css-truncate-overflow,
+.css-truncate .css-truncate-overflow,
+.css-truncate.css-truncate-target,
+.css-truncate .css-truncate-target {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.css-truncate.css-truncate-target,
+.css-truncate .css-truncate-target {
+  display: inline-block;
+  max-width: 125px;
+  vertical-align: top;
+}
 
 html {
 }

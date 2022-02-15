@@ -47,22 +47,32 @@ impl Component for App {
     fn view(&self, _ctx: &Context<Self>) -> Html {
         html! {
         <BrowserRouter>
-            <header class="p-3"><div class="container">
-                <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-                    <a class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none" href="/">
-                        <img class="bi me-2" width="40" height="32" role="img" aria-label="Schmetterling" src="favicon.svg" alt="Schmetterling"/>
-                    </a>
-                    <span>{"Schmetterling"}</span>
+            <nav class="navbar navbar-expand navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/">
+                    <img class="bi me-2" width="40" height="32" role="img" src="favicon.svg" alt="Schmetterling"/>
+                </a>
+                <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><Link<Route> classes="nav-link active" to={Route::Home}>{"Home"}</Link<Route>></li>
+                </ul>
                 </div>
-            </div></header>
-            <main>
+            </div>
+            </nav>
+            <main class="flex-shrink-0">
+                <div class="container">
                 <Switch<Route> render={Switch::render(Route::switch)} />
+                </div>
             </main>
-            <footer class="footer mt-auto py-3 bg-light"><div class="container">
-                <span class="text-muted">{"Copyright (c) 2022 ProphetLamb"}</span>
-                <Link<Route> to={Route::Home}>{"Home"}</Link<Route>>
-                <Link<Route> to={Route::Imprint}>{"Imprint"}</Link<Route>>
-            </div></footer>
+            <footer class="footer mt-auto py-3">
+            <div class="container-fluid">
+                <ul class="list-group list-group-horizontal">
+                    <li class="list-group-item"><a class="text-muted nav-link" href="https://github.com/ProphetLamb/Schmetterling">{"Copyright (c) 2022 ProphetLamb"}</a></li>
+                    <li class="list-group-item"><Link<Route> classes="text-muted nav-link" to={Route::Home}>{"Home"}</Link<Route>></li>
+                    <li class="list-group-item"><Link<Route> classes="text-muted nav-link" to={Route::Imprint}>{"Imprint"}</Link<Route>></li>
+                </ul>
+            </div>
+            </footer>
         </BrowserRouter>
         }
     }
