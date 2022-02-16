@@ -4,15 +4,24 @@ use web_sys::Element;
 use yew::virtual_dom::{VNode, VTag, VText};
 use yew::{html, Classes, Component, Context, Html, NodeRef, Properties};
 
-#[derive(PartialEq, Eq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug)]
 pub struct Markup {
     pub text: String,
     pub lang: MarkupLang,
 }
 
-impl Into<String> for Markup {
-    fn into(self) -> String {
-        self.text
+impl Clone for Markup {
+    fn clone(&self) -> Self {
+        Self {
+            text: self.text.to_owned(),
+            lang: self.lang,
+        }
+    }
+}
+
+impl From<Markup> for String {
+    fn from(val: Markup) -> Self {
+        val.text
     }
 }
 
@@ -60,6 +69,12 @@ impl Display for Markup {
 pub enum MarkupLang {
     Html,
     Md,
+}
+
+impl MarkupLang {
+    pub fn with_text(self, text: String) -> Markup {
+        Markup::new(text, self)
+    }
 }
 
 impl Display for MarkupLang {

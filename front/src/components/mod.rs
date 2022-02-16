@@ -1,9 +1,10 @@
 pub mod card;
+pub mod edt;
 
 use web_sys::Element;
 use yew::prelude::*;
 
-use crate::components::card::*;
+use crate::components::card::Card;
 use crate::markup::*;
 
 pub struct Home;
