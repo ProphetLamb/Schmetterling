@@ -1,9 +1,9 @@
-pub mod edt;
+pub mod card;
 
 use web_sys::Element;
 use yew::prelude::*;
 
-use crate::components::edt::*;
+use crate::components::card::*;
 use crate::markup::*;
 
 pub struct Home;
@@ -19,7 +19,11 @@ impl Component for Home {
 
     fn view(&self, _ctx: &yew::Context<Self>) -> yew::Html {
         html! {
-            <Edt />
+        <>
+            <Card />
+            <Card />
+            <Card />
+        </>
         }
     }
 }
@@ -38,7 +42,7 @@ impl Component for Imprint {
     }
 
     fn view(&self, _ctx: &Context<Self>) -> Html {
-        Markup::Markdown(README.to_string()).to_dom()
+        Markup::md(README.to_string()).to_dom()
     }
 }
 

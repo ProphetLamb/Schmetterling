@@ -4,57 +4,88 @@ use web_sys::Element;
 use yew::virtual_dom::{VNode, VTag, VText};
 use yew::{html, Classes, Component, Context, Html, NodeRef, Properties};
 
-#[derive(PartialEq, Eq)]
-pub enum Markup {
-    Html(String),
-    Markdown(String),
+#[derive(PartialEq, Eq, Debug, Clone)]
+pub struct Markup {
+    pub text: String,
+    pub lang: MarkupLang,
 }
 
-impl Clone for Markup {
-    fn clone(&self) -> Self {
-        match self {
-            Self::Html(arg0) => Self::Html(arg0.to_owned()),
-            Self::Markdown(arg0) => Self::Markdown(arg0.to_owned()),
-        }
+impl Into<String> for Markup {
+    fn into(self) -> String {
+        self.text
     }
 }
 
-impl Default for Markup {
-    fn default() -> Self {
-        Markup::Html(String::default())
+impl Markup {
+    pub fn new(text: String, lang: MarkupLang) -> Self {
+        Self { text, lang }
+    }
+
+    pub fn html(text: String) -> Self {
+        Self {
+            text,
+            lang: MarkupLang::Html,
+        }
+    }
+
+    pub fn md(text: String) -> Self {
+        Self {
+            text,
+            lang: MarkupLang::Md,
+        }
+    }
+
+    pub fn html_str(text: &str) -> Self {
+        Self {
+            text: text.to_string(),
+            lang: MarkupLang::Html,
+        }
+    }
+
+    pub fn md_str(text: &str) -> Self {
+        Self {
+            text: text.to_string(),
+            lang: MarkupLang::Md,
+        }
     }
 }
 
 impl Display for Markup {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let (name, markup) = match self {
-            Markup::Html(markup) => ("Html", markup.as_str()),
-            Markup::Markdown(markup) => ("Markdown", markup.as_str()),
-        };
+        write!(f, "{}[{}]", self.lang, self.text)
+    }
+}
 
-        write!(f, "{}({})", name, markup)
+#[derive(PartialEq, Debug, Eq, Clone, Copy)]
+pub enum MarkupLang {
+    Html,
+    Md,
+}
+
+impl Display for MarkupLang {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let lang = match self {
+            MarkupLang::Html => "html",
+            MarkupLang::Md => "md",
+        };
+        write!(f, "{}", lang)
+    }
+}
+
+impl Default for Markup {
+    fn default() -> Self {
+        Self {
+            text: String::default(),
+            lang: MarkupLang::Md,
+        }
     }
 }
 
 impl Markup {
-    pub fn markup(&self) -> &String {
-        match self {
-            Markup::Html(text) => text,
-            Markup::Markdown(text) => text,
-        }
-    }
-
-    pub fn with_text(&self, markup: String) -> Markup {
-        match self {
-            Markup::Html(_) => Markup::Html(markup),
-            Markup::Markdown(_) => Markup::Markdown(markup),
-        }
-    }
-
     pub fn to_dom(&self) -> Html {
-        match self {
-            Markup::Html(html) => html!(<RawHtml inner_html={html.to_owned()}/>),
-            Markup::Markdown(md) => render_markdown(md.as_str()),
+        match self.lang {
+            MarkupLang::Html => html!(<RawHtml inner_html={self.text.to_owned()}/>),
+            MarkupLang::Md => render_markdown(self.text.as_str()),
         }
     }
 }
