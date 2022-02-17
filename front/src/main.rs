@@ -50,7 +50,7 @@ impl Component for App {
             <nav class="navbar navbar-expand navbar-dark bg-dark">
             <div class="container-fluid">
                 <a class="navbar-brand" href="/">
-                    <img class="bi me-2" width="40" height="32" role="img" src="favicon.svg" alt="Schmetterling"/>
+                    <img class="bi me-2" width="40" height="32" role="img" src="assets/favicon.svg" alt="Schmetterling"/>
                 </a>
                 <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto">
@@ -59,7 +59,7 @@ impl Component for App {
                 </div>
             </div>
             </nav>
-            <main class="flex-shrink-0">
+            <main class="flex-shrink-0" style="min-height: 30rem;">
                 <div class="container">
                 <Switch<Route> render={Switch::render(Route::switch)} />
                 </div>
@@ -76,8 +76,35 @@ impl Component for App {
     }
 }
 
+#[macro_export]
+macro_rules! web_log {
+    ($($arg:tt)*) => {
+        web_sys::console::log_1(
+                &format!($($arg)*).into()
+            );
+
+    };
+}
+#[macro_export]
+macro_rules! web_warn {
+    ($($arg:tt)*) => {
+        web_sys::console::warn_1(
+                &format!($($arg)*).into()
+            );
+
+    };
+}
+#[macro_export]
+macro_rules! web_error {
+    ($($arg:tt)*) => {
+        web_sys::console::error_1(
+                &format!($($arg)*).into()
+            );
+
+    };
+}
+
 fn main() {
     console_error_panic_hook::set_once();
-
     yew::start_app::<App>();
 }

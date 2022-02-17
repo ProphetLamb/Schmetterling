@@ -1,4 +1,5 @@
 use closure::closure;
+use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use web_sys::HtmlTextAreaElement;
 use yew::prelude::*;
@@ -18,11 +19,13 @@ pub struct Props {
     #[prop_or_default]
     pub value: Markup,
     #[prop_or_default]
-    pub classes: Classes,
+    pub view_classes: Classes,
+    #[prop_or_default]
+    pub edit_classes: Classes,
     #[prop_or_default]
     pub on_click: Callback<MouseEvent>,
     #[prop_or_default]
-    pub on_dblclick: Callback<MouseEvent>,
+    pub on_double_click: Callback<MouseEvent>,
     #[prop_or_default]
     pub on_input: Callback<InputEvent>,
     #[prop_or_default]
@@ -77,7 +80,7 @@ pub fn edt(props: &Props) -> Html {
         value: props.value.clone(),
     });
 
-    macro_rules! callback {
+    macro_rules! callback_event {
         ($event:ty, $handler:tt) => {
             {
                 let $handler = &props.$handler;
@@ -86,14 +89,17 @@ pub fn edt(props: &Props) -> Html {
         };
     }
     match props.mode {
-        Presentation::View => state.dom.clone(),
+        Presentation::View => {
+            html! {<div class={props.view_classes.clone()}>
+            {state.dom.clone()} </div>}
+        }
         Presentation::Edit => {
-            let onclick = callback!(MouseEvent, on_click);
-            let ondblclick = callback!(MouseEvent, on_dblclick);
-            let oninput = callback!(InputEvent, on_input);
+            let onclick = callback_event!(MouseEvent, on_click);
+            let ondblclick = callback_event!(MouseEvent, on_double_click);
+            let oninput = callback_event!(InputEvent, on_input);
             let onchange = on_change(state, props);
             html! {
-            <textarea class={props.classes.clone()} value={props.value.text.clone()} {onclick} {ondblclick} {oninput} {onchange}/>
+            <textarea class={props.edit_classes.clone()} value={props.value.text.clone()} {onclick} {ondblclick} {oninput} {onchange}/>
             }
         }
     }

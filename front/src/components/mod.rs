@@ -1,10 +1,12 @@
 pub mod card;
+pub mod doc;
 pub mod edt;
+pub mod proj;
 
-use web_sys::Element;
 use yew::prelude::*;
 
-use crate::components::card::Card;
+use super::card::Card;
+use super::doc::Document;
 use crate::markup::*;
 
 pub struct Home;
@@ -21,9 +23,7 @@ impl Component for Home {
     fn view(&self, _ctx: &yew::Context<Self>) -> yew::Html {
         html! {
         <>
-            <Card />
-            <Card />
-            <Card />
+            <Document id=0 />
         </>
         }
     }

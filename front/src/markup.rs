@@ -1,10 +1,11 @@
 use pulldown_cmark::{Alignment, CodeBlockKind, Event, Options, Parser, Tag};
+use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
 use web_sys::Element;
 use yew::virtual_dom::{VNode, VTag, VText};
 use yew::{html, Classes, Component, Context, Html, NodeRef, Properties};
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct Markup {
     pub text: String,
     pub lang: MarkupLang,
@@ -65,7 +66,7 @@ impl Display for Markup {
     }
 }
 
-#[derive(PartialEq, Debug, Eq, Clone, Copy)]
+#[derive(PartialEq, Debug, Eq, Clone, Copy, Serialize, Deserialize)]
 pub enum MarkupLang {
     Html,
     Md,
