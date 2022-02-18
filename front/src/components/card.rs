@@ -1,47 +1,73 @@
 use closure::closure;
+use serde::{Deserialize, Serialize};
+use std::collections::hash_map::Entry::*;
 use std::rc::Rc;
-use web_sys::{HtmlInputElement, Node};
+use wasm_bindgen::{JsCast, UnwrapThrowExt};
+use web_sys::{HtmlDivElement, HtmlElement, HtmlInputElement, Location, Node};
 use yew::prelude::*;
 
+use super::doc;
 use super::edt::{Edt, Presentation};
 use crate::markup::*;
 
-#[derive(Properties, PartialEq, Debug)]
-pub struct Props {
-    pub id: i64,
-    #[prop_or_default]
-    pub on_title_change: Callback<(i64, String, Event)>,
-    #[prop_or_default]
-    pub on_content_change: Callback<(i64, Markup, Event)>,
-    #[prop_or_default]
-    pub on_mode_change: Callback<(i64, Presentation)>,
-    #[prop_or_default]
-    pub on_click: Callback<i64>,
-    #[prop_or_default]
-    pub on_double_click: Callback<i64>,
+pub type Id = i64;
+
+pub fn card_with(doc_id: doc::Id, card_id: Id) -> State {
+    match doc::get_cards(doc_id).entry(card_id) {
+        Occupied(entry) => entry.get().with_mode_view(),
+        Vacant(entry) => entry.insert(State::default()).with_mode_view(),
+    }
 }
 
-enum Action {
+type ChangeEvent = Callback<(Id, State, Event)>;
+
+#[derive(Properties, PartialEq, Debug)]
+pub struct Props {
+    pub card_id: Id,
+    pub doc_id: doc::Id,
+    #[prop_or_default]
+    pub on_change: ChangeEvent,
+    #[prop_or_default]
+    pub on_click: Callback<Id>,
+    #[prop_or_default]
+    pub on_double_click: Callback<Id>,
+}
+
+pub enum Action {
     Mode(Presentation),
     Content(Markup),
     Title(String),
+    DoubleClick(MouseEvent),
+    Blur(FocusEvent),
 }
 
-#[derive(PartialEq, Clone, Debug)]
-struct State {
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+pub struct State {
     mode: Presentation,
     content: Markup,
     title: String,
-    id: i64,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        State {
+            mode: Presentation::View,
+            content: Markup::default(),
+            title: "Section".to_string(),
+        }
+    }
 }
 
 impl State {
+    fn with_mode_view(&self) -> Self {
+        self.with_mode(Presentation::View)
+    }
+
     fn with_mode(&self, mode: Presentation) -> Self {
         Self {
             mode,
             content: self.content.clone(),
             title: self.title.clone(),
-            id: self.id,
         }
     }
     fn with_content(&self, value: Markup) -> Self {
@@ -49,7 +75,6 @@ impl State {
             mode: self.mode,
             content: value,
             title: self.title.clone(),
-            id: self.id,
         }
     }
     fn with_title(&self, title: String) -> Self {
@@ -57,7 +82,6 @@ impl State {
             mode: self.mode,
             content: self.content.clone(),
             title,
-            id: self.id,
         }
     }
 }
@@ -76,64 +100,99 @@ impl Reducible for State {
             }
             Action::Content(content) => self.with_content(content).into(),
             Action::Title(title) => self.with_title(title).into(),
+            Action::DoubleClick(event) => {
+                if self.mode == Presentation::View {
+                    self.with_mode(Presentation::Edit).into()
+                } else {
+                    self
+                }
+            }
+            Action::Blur(event) => {
+                let target = event
+                    .target_dyn_into::<HtmlElement>()
+                    .expect_throw("Expected event target HtmlElement.");
+                if let Some(card) = map_parent(target, |n| match n.dyn_into::<HtmlDivElement>() {
+                    Ok(div) if div.class_list().contains("Card") => Ok(div),
+                    Ok(div) => Err(div.into()),
+                    Err(n) => Err(n.unchecked_into::<HtmlElement>()),
+                }) {
+                    if let Some(related) = event
+                        .related_target()
+                        .and_then(|et| et.dyn_into::<Node>().ok())
+                    {
+                        if card.contains(Some(&related)) {
+                            return self;
+                        }
+                    }
+                }
+                let state = self.with_mode_view();
+                state.into()
+            }
         }
     }
 }
 
+fn map_parent<T: JsCast, F: Fn(HtmlElement) -> Result<T, HtmlElement>>(
+    item: HtmlElement,
+    select: F,
+) -> Option<T> {
+    let mut root = item;
+    while let Some(child) = root
+        .parent_node()
+        .and_then(|node| node.dyn_into::<HtmlElement>().ok())
+    {
+        match select(child) {
+            Ok(target) => return Some(target),
+            Err(child) => root = child,
+        }
+    }
+    None
+}
+
 #[function_component(Card)]
 pub fn card(props: &Props) -> Html {
-    let state = use_reducer_eq(|| State {
-        mode: Presentation::View,
-        content: Markup::md_str(""),
-        title: "".to_string(),
-        id: props.id,
-    });
-    let id = props.id;
-    let mode_cb = &props.on_mode_change;
-    let view = Callback::from(closure!(clone state, clone mode_cb, |_| {
-        state.dispatch(Action::Mode(Presentation::View));
-        mode_cb.emit((id, Presentation::View));
-    }));
-    let edit = Callback::from(closure!(clone state, clone mode_cb, |_| {
-        state.dispatch(Action::Mode(Presentation::Edit));
-        mode_cb.emit((id, Presentation::Edit));
-    }));
-    let content = &props.on_content_change;
+    let doc_id = props.doc_id;
+    let card_id = props.card_id;
+    let state = use_reducer_eq(|| card_with(doc_id, card_id));
+
+    let change = &props.on_change;
     let content = Callback::from(
-        closure!(clone state, clone content, |(markup, e): (Markup, Event)| {
-            content.emit((id, markup.clone(), e));
+        closure!(clone state, clone change, |(markup, e): (Markup, Event)| {
             state.dispatch(Action::Content(markup));
+            change.emit((card_id, (*state).with_mode_view(), e));
         }),
     );
-    let title = &props.on_title_change;
-    let title = closure!(clone state, clone title, |e: Event| {
+    let title = closure!(clone state, clone change, |e: Event| {
         let input = e.target_dyn_into::<HtmlInputElement>().expect("Target must be HtmlInputElement.");
-        title.emit((id, input.value(), e));
         state.dispatch(Action::Title(input.value()));
+        change.emit((card_id, (*state).with_mode_view(), e));
     });
+
     let click = &props.on_click;
-    let click = closure!(clone click, |_| click.emit(id));
+    let click = closure!(clone click, |_| click.emit(card_id));
+
     let double_click = &props.on_double_click;
-    let double_click = closure!(clone double_click, |_| double_click.emit(id));
+    let double_click = closure!(clone state, clone double_click, |e| {
+        state.dispatch(Action::DoubleClick(e));
+        double_click.emit(card_id);
+    });
+
+    let on_blur = closure!(clone state, clone change, |e: FocusEvent| {
+        state.dispatch(Action::Blur(e.clone()));
+        change.emit((card_id, (*state).clone(), e.into()))
+    });
 
     html! {
-    <div class="Card" onclick={click} ondblclick={double_click}>
-    if state.mode == Presentation::View {
+    <div class="Card" id={format!("card-{}", card_id)} onclick={click} ondblclick={double_click} onblur={on_blur}>
         <div class="card-header">
-            <span class="card-title">{state.title.clone()}</span>
-            <button class="Icon" onclick={edit}>
-                <i class="fa fa-pen" role="img" ></i>
-            </button>
+    if state.mode == Presentation::View {
+                    <i class="Icon fa fa-link"/>
+                <span class="card-title">{state.title.clone()}</span>
+        } else {
+            <input class="form-control" type="text" value={state.title.clone()} onchange={title} />
+        }
         </div>
-    } else {
-        <input class="card-header form-control" type="text" value={state.title.clone()} onchange={title} />
-    }
         <Edt edit_classes={classes!("card-body", "form-control")} view_classes={classes!("card-body")} mode={state.mode} value={state.content.clone()} on_change={content} />
-    if state.mode == Presentation::Edit {
-        <div class="card-footer">
-            <button class="btn-sm btn-primary" onclick={view}>{"Update"}</button>
-        </div>
-    }
     </div>
     }
 }

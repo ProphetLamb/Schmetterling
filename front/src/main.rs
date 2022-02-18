@@ -3,6 +3,9 @@
 pub mod components;
 pub mod markup;
 
+use gloo_storage::{LocalStorage, Storage};
+use serde::{Deserialize, Serialize};
+use wasm_bindgen::UnwrapThrowExt;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -59,10 +62,8 @@ impl Component for App {
                 </div>
             </div>
             </nav>
-            <main class="flex-shrink-0" style="min-height: 30rem;">
-                <div class="container">
+            <main>
                 <Switch<Route> render={Switch::render(Route::switch)} />
-                </div>
             </main>
             <footer class="footer mt-auto py-3">
             <div class="d-flex justify-content-right flex-row flex-wrap">
@@ -102,6 +103,32 @@ macro_rules! web_error {
             );
 
     };
+}
+
+/// Attempts to deserialize a key in the `LocalStorage`, if successful returns the value;
+/// otherwise creates the key of the given type, if that fails panics;
+/// otherwise attempts to get the created key, if that fails panics.
+pub fn get_or_create<T, F>(key: &str, f: F) -> T
+where
+    T: Serialize + for<'de> Deserialize<'de>,
+    F: Fn() -> T,
+{
+    match LocalStorage::get(key) {
+        Ok(set) => set,
+        Err(err) => {
+            web_warn!("Key {} not found in storage. Creating.", key);
+            LocalStorage::set(key, f()).expect("Unable to create the key in LocalStorage.");
+            LocalStorage::get(key).expect("Unable to get the created key in LocalStorage.")
+        }
+    }
+}
+
+pub fn set<T>(key: &str, new_value: T)
+where
+    T: Serialize + for<'de> Deserialize<'de>,
+{
+    LocalStorage::set(key, new_value)
+        .unwrap_or_else(|_| panic!("Unable to assign a value to the key {}", key));
 }
 
 fn main() {

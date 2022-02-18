@@ -23,7 +23,7 @@ impl Component for Home {
     fn view(&self, _ctx: &yew::Context<Self>) -> yew::Html {
         html! {
         <>
-            <Document id=0 />
+            <Document doc_id=0 />
         </>
         }
     }

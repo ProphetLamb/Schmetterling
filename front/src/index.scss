@@ -31,19 +31,29 @@ html {
   @extend .bg-dark;
 }
 
+main {
+  @extend .flex-shrink-0;
+  @extend .container;
+  min-height: 30rem;
+}
+
 footer {
   @extend .bg-dark;
 }
 
+@mixin circle($diam) {
+  width: $diam;
+  height: $diam;
+  border-radius: $diam * 0.5;
+  font-size: $diam * 0.4;
+}
+
 .btn-circle {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 1.5rem;
-  font-size: 1.4rem;
+  @include circle(2rem);
   text-align: center;
   line-height: 1.4;
   padding: 0;
-  border-width: 0.25rem;
+  border-width: 0.15rem;
   border-color: $primary;
   @extend .bg-transparent;
   > .fa {
@@ -51,6 +61,9 @@ footer {
   }
   &:hover {
     @extend .bg-primary;
+    > .fa {
+      color: $body-bg;
+    }
   }
 }
 
@@ -62,34 +75,26 @@ footer {
 
 .Card {
   @extend .card;
-  @extend .mb-1;
+  @extend .pb-1;
   > .card-header {
     @extend .d-flex;
-    @extend .justify-content-between;
+    @extend .fw-bold;
     align-items: center;
     filter: opacity(0.5);
-    > .Icon {
-      display: none;
-      @extend .btn;
-      @extend .bg-transparent;
-    }
     > .card-title {
-      line-height: 0.3;
+      line-height: 0.1;
     }
     > .card-footer {
       @extend .d-flex;
+    }
+    .Icon {
+      @extend .btn;
     }
   }
   &:hover {
     @extend .border-secondary;
     > .card-header {
       filter: opacity(1);
-      > .Icon {
-        display: inherit;
-        &:hover {
-          color: $primary;
-        }
-      }
     }
   }
   &:focus-within {
@@ -98,4 +103,7 @@ footer {
       display: inherit;
     }
   }
+}
+
+.Document {
 }

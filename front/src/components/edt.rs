@@ -6,7 +6,7 @@ use yew::prelude::*;
 
 use crate::markup::*;
 
-#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum Presentation {
     View,
     Edit,
