@@ -7,6 +7,7 @@ use yew::prelude::*;
 
 use super::card::Card;
 use super::doc::Document;
+use super::id;
 use crate::markup::*;
 
 pub struct Home;
@@ -23,7 +24,7 @@ impl Component for Home {
     fn view(&self, _ctx: &yew::Context<Self>) -> yew::Html {
         html! {
         <>
-            <Document doc_id=0 />
+            <Document id={doc::Id{value: 0, proj: 0.into()}} />
         </>
         }
     }

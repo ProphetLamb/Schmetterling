@@ -1,11 +1,12 @@
 #![recursion_limit = "1024"]
 
 pub mod components;
+pub mod id;
 pub mod markup;
 
-use gloo_storage::{LocalStorage, Storage};
+use gloo_console::{error, info};
+use gloo_storage::{errors::StorageError, LocalStorage, Storage};
 use serde::{Deserialize, Serialize};
-use wasm_bindgen::UnwrapThrowExt;
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -77,31 +78,9 @@ impl Component for App {
     }
 }
 
-#[macro_export]
-macro_rules! web_log {
-    ($($arg:tt)*) => {
-        web_sys::console::log_1(
-                &format!($($arg)*).into()
-            );
-
-    };
-}
-#[macro_export]
-macro_rules! web_warn {
-    ($($arg:tt)*) => {
-        web_sys::console::warn_1(
-                &format!($($arg)*).into()
-            );
-
-    };
-}
-#[macro_export]
-macro_rules! web_error {
-    ($($arg:tt)*) => {
-        web_sys::console::error_1(
-                &format!($($arg)*).into()
-            );
-
+macro_rules! tname {
+    ($type:ty) => {
+        std::any::type_name::<$type>()
     };
 }
 
@@ -111,27 +90,42 @@ macro_rules! web_error {
 pub fn get_or_create<T, F>(key: &str, f: F) -> T
 where
     T: Serialize + for<'de> Deserialize<'de>,
-    F: Fn() -> T,
+    F: FnOnce() -> T,
 {
+    info!(format!("get key {} of type {}", key, tname!(T)));
     match LocalStorage::get(key) {
         Ok(set) => set,
         Err(err) => {
-            web_warn!("Key {} not found in storage. Creating.", key);
-            LocalStorage::set(key, f()).expect("Unable to create the key in LocalStorage.");
-            LocalStorage::get(key).expect("Unable to get the created key in LocalStorage.")
+            error!(format!(
+                "key {} not found. Creating key instead.\nError: {}",
+                key, err
+            ));
+            let value = f();
+            set(key, value)
         }
     }
 }
 
-pub fn set<T>(key: &str, new_value: T)
+pub fn set<T>(key: &str, value: T) -> T
 where
-    T: Serialize + for<'de> Deserialize<'de>,
+    T: ?Sized + Serialize + for<'de> Deserialize<'de>,
 {
-    LocalStorage::set(key, new_value)
-        .unwrap_or_else(|_| panic!("Unable to assign a value to the key {}", key));
+    info!(format!("set key {} of type {}", key, tname!(T)));
+    LocalStorage::set(key, &value).unwrap_or_else(|e| panic_set(key, e));
+    value
 }
 
 fn main() {
     console_error_panic_hook::set_once();
     yew::start_app::<App>();
+}
+
+fn panic_set(key: &str, e: StorageError) -> ! {
+    panic!("unable to create the key '{}'.\nError: {}", key, e)
+}
+fn panic_get(key: &str, e: StorageError) -> ! {
+    panic!("unable to get the created key '{}'.\nError: {}", key, e)
+}
+fn panic_ser(e: serde_json::Error) -> ! {
+    panic!("unable to serialize the value.\nError: {}", e)
 }

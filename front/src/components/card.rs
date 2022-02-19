@@ -7,13 +7,17 @@ use web_sys::{HtmlDivElement, HtmlElement, HtmlInputElement, Location, Node};
 use yew::prelude::*;
 
 use super::doc;
-use super::edt::{Edt, Presentation};
+use super::edt::{MarkupEdit, Presentation};
 use crate::markup::*;
 
-pub type Id = i64;
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+pub struct Id {
+    pub value: u64,
+    pub doc: doc::Id,
+}
 
-pub fn card_with(doc_id: doc::Id, card_id: Id) -> State {
-    match doc::get_cards(doc_id).entry(card_id) {
+pub fn card_with(id: Id) -> State {
+    match doc::get_doc(id.doc).children.entry(id) {
         Occupied(entry) => entry.get().with_mode_view(),
         Vacant(entry) => entry.insert(State::default()).with_mode_view(),
     }
@@ -23,8 +27,7 @@ type ChangeEvent = Callback<(Id, State, Event)>;
 
 #[derive(Properties, PartialEq, Debug)]
 pub struct Props {
-    pub card_id: Id,
-    pub doc_id: doc::Id,
+    pub id: Id,
     #[prop_or_default]
     pub on_change: ChangeEvent,
     #[prop_or_default]
@@ -41,11 +44,38 @@ pub enum Action {
     Blur(FocusEvent),
 }
 
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+/// Do not serialize the presentation mode.
+/// Intermediate structure for serialization.
+#[derive(PartialEq, Debug, Serialize, Deserialize)]
+pub struct SerState {
+    pub content: Markup,
+    pub title: String,
+}
+
+impl From<State> for SerState {
+    fn from(val: State) -> Self {
+        SerState {
+            content: val.content.clone(),
+            title: val.title,
+        }
+    }
+}
+
+impl From<SerState> for State {
+    fn from(val: SerState) -> Self {
+        State {
+            content: val.content.clone(),
+            title: val.title,
+            mode: Presentation::View,
+        }
+    }
+}
+
+#[derive(PartialEq, Debug, Clone)]
 pub struct State {
-    mode: Presentation,
-    content: Markup,
-    title: String,
+    pub mode: Presentation,
+    pub content: Markup,
+    pub title: String,
 }
 
 impl Default for State {
@@ -100,7 +130,7 @@ impl Reducible for State {
             }
             Action::Content(content) => self.with_content(content).into(),
             Action::Title(title) => self.with_title(title).into(),
-            Action::DoubleClick(event) => {
+            Action::DoubleClick(_) => {
                 if self.mode == Presentation::View {
                     self.with_mode(Presentation::Edit).into()
                 } else {
@@ -151,48 +181,47 @@ fn map_parent<T: JsCast, F: Fn(HtmlElement) -> Result<T, HtmlElement>>(
 
 #[function_component(Card)]
 pub fn card(props: &Props) -> Html {
-    let doc_id = props.doc_id;
-    let card_id = props.card_id;
-    let state = use_reducer_eq(|| card_with(doc_id, card_id));
+    let id = props.id;
+    let state = use_reducer_eq(|| card_with(id));
 
     let change = &props.on_change;
     let content = Callback::from(
         closure!(clone state, clone change, |(markup, e): (Markup, Event)| {
             state.dispatch(Action::Content(markup));
-            change.emit((card_id, (*state).with_mode_view(), e));
+            change.emit((id, (*state).with_mode_view(), e));
         }),
     );
     let title = closure!(clone state, clone change, |e: Event| {
         let input = e.target_dyn_into::<HtmlInputElement>().expect("Target must be HtmlInputElement.");
         state.dispatch(Action::Title(input.value()));
-        change.emit((card_id, (*state).with_mode_view(), e));
+        change.emit((id, (*state).with_mode_view(), e));
     });
 
     let click = &props.on_click;
-    let click = closure!(clone click, |_| click.emit(card_id));
+    let click = closure!(clone click, |_| click.emit(id));
 
     let double_click = &props.on_double_click;
     let double_click = closure!(clone state, clone double_click, |e| {
         state.dispatch(Action::DoubleClick(e));
-        double_click.emit(card_id);
+        double_click.emit(id);
     });
 
     let on_blur = closure!(clone state, clone change, |e: FocusEvent| {
         state.dispatch(Action::Blur(e.clone()));
-        change.emit((card_id, (*state).clone(), e.into()))
+        change.emit((id, (*state).clone(), e.into()))
     });
 
     html! {
-    <div class="Card" id={format!("card-{}", card_id)} onclick={click} ondblclick={double_click} onblur={on_blur}>
+    <div class="Card" id={format!("card-{}", id.value)} onclick={click} ondblclick={double_click} onblur={on_blur}>
         <div class="card-header">
-    if state.mode == Presentation::View {
+        if state.mode == Presentation::View {
                     <i class="Icon fa fa-link"/>
                 <span class="card-title">{state.title.clone()}</span>
         } else {
             <input class="form-control" type="text" value={state.title.clone()} onchange={title} />
         }
         </div>
-        <Edt edit_classes={classes!("card-body", "form-control")} view_classes={classes!("card-body")} mode={state.mode} value={state.content.clone()} on_change={content} />
+        <MarkupEdit edit_classes={classes!("card-body", "form-control")} view_classes={classes!("card-body")} mode={state.mode} value={state.content.clone()} on_change={content} />
     </div>
     }
 }

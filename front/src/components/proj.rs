@@ -1,33 +1,33 @@
-use closure::closure;
-use std::{collections::HashMap, rc::Rc};
+use std::collections::HashMap;
 use yew::prelude::*;
 
 use super::doc;
 
-pub type Id = i64;
-
-pub fn get_key(proj_id: Id) -> String {
-    format!("yew.schmetterling.proj.{:X}", proj_id)
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+pub struct Id {
+    pub value: u64,
 }
 
-pub fn get_cards(proj_id: Id) -> HashMap<doc::Id, doc::State> {
-    let key = get_key(proj_id);
-    crate::get_or_create(key.as_str(), HashMap::new)
+pub fn get_docs(id: Id) -> HashMap<doc::Id, doc::SerState> {
+    crate::get_or_create(
+        id.to_string().as_str(),
+        HashMap::<doc::Id, doc::SerState>::new,
+    )
 }
 
-pub fn upd_cards(proj_id: Id, docs: HashMap<doc::Id, doc::State>) {
-    let key = get_key(proj_id);
-    crate::set(key.as_str(), docs);
+pub fn upd_docs(id: Id, docs: HashMap<doc::Id, doc::SerState>) {
+    crate::set(id.to_string().as_str(), docs);
 }
 
 #[derive(Properties, PartialEq, Debug)]
 pub struct Props {
-    cards: ChildrenWithProps<doc::Document>,
+    children: Vec<doc::Id>,
 }
 
 #[function_component(Project)]
 pub fn proj(props: &Props) -> Html {
     html! {
-        {for props.cards.clone().into_iter()}
+        <div>
+        </div>
     }
 }
