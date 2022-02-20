@@ -4,7 +4,7 @@ use std::collections::{BTreeSet, HashMap};
 use yew::prelude::*;
 use yew_router::prelude::Link;
 
-use crate::{components::doc, data::*, id, markup::Markup, MainRoute};
+use crate::{components::doc, data::*, id, MainRoute};
 
 pub enum Action {
     Add(id::Doc),

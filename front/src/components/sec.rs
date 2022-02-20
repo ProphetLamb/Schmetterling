@@ -53,7 +53,7 @@ impl Reducible for State {
                     .target_dyn_into::<HtmlElement>()
                     .expect("Expected event target HtmlElement.");
                 if let Some(card) = map_parent(target, |n| match n.dyn_into::<HtmlDivElement>() {
-                    Ok(div) if div.class_list().contains("Card") => Ok(div),
+                    Ok(div) if div.class_list().contains("Section") => Ok(div),
                     Ok(div) => Err(div.into()),
                     Err(n) => Err(n.unchecked_into::<HtmlElement>()),
                 }) {
@@ -145,7 +145,7 @@ pub fn sec(props: &Props) -> Html {
         if state.mode == Presentation::View {
             <span class="card-title">{props.title.clone()}</span>
         } else {
-            <input class="form-control" type="text" value={props.title.clone()} onchange={title} />
+            <input class="form-control" type="text" value={props.title.clone()} onchange={title} autofocus=true />
         }
         </div>
         <MarkupEdit edit_classes={classes!("card-body", "form-control")} view_classes={classes!("card-body")} mode={state.mode} value={props.content.clone()} on_change={content} />

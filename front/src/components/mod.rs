@@ -1,4 +1,5 @@
 pub mod doc;
+pub mod modal;
 pub mod proj;
 pub mod sec;
 pub mod text;

@@ -75,7 +75,7 @@ pub fn edit(props: &EditProps) -> Html {
         </div>
         <div class="mb-3">
             <label for="summary" class="form-label">{"Summary"}</label>
-            <MarkupEdit mode={Presentation::Edit} value={decl.summary} id="summary" on_change={summary}/>
+            <MarkupEdit edit_classes={classes!("form-control")} mode={Presentation::Edit} value={decl.summary} id="summary" on_change={summary}/>
         </div>
     </>
     }
@@ -210,13 +210,13 @@ pub fn doc(props: &Props) -> Html {
     let add = Callback::from(closure!(clone state, |_| state.dispatch(Action::Add(next_id))));
 
     html! {
+    <>
     <section class="Document">
-    {render_decl_edit_modal(&*state)}
         <div class="text-center" ondblclick={decl_edit}>
             <span class="display-5">{state.decl.title.clone()}</span>
         </div>
         <div class="container">
-        { render_children_ord(props, state) }
+    { render_children_ord(state.clone()) }
         </div>
         <div class="d-flex m-3 justify-content-center">
             <button class="btn btn-circle" onclick={add}>
@@ -224,14 +224,12 @@ pub fn doc(props: &Props) -> Html {
             </button>
         </div>
     </section>
+    {render_decl_edit_modal(&*state)}
+    </>
     }
 }
 
 fn render_decl_edit_modal(state: &State) -> Html {
-    if state.decl_mode == Presentation::View {
-        return html! {<> </>};
-    }
-    error!("Opening modal!");
     html! {
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -253,7 +251,7 @@ fn render_decl_edit_modal(state: &State) -> Html {
     }
 }
 
-fn render_children_ord(props: &Props, state: UseReducerHandle<State>) -> Html {
+fn render_children_ord(state: UseReducerHandle<State>) -> Html {
     let seg_title = Callback::from(closure!(clone state, |p| state.dispatch(Action::CardTitle(p))));
     let seg_content =
         Callback::from(closure!(clone state, |p| state.dispatch(Action::CardContent(p))));
