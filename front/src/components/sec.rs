@@ -6,7 +6,13 @@ use web_sys::{HtmlDivElement, HtmlElement, HtmlInputElement, Node};
 use yew::prelude::*;
 
 use super::text::{MarkupEdit, Presentation};
-use crate::{action, id, markup::*};
+use crate::{id, markup::*};
+
+pub enum Action {
+    Mode(Presentation),
+    DoubleClick(MouseEvent),
+    Blur(FocusEvent),
+}
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct State {
@@ -24,25 +30,25 @@ impl State {
 }
 
 impl Reducible for State {
-    type Action = action::Card;
+    type Action = Action;
 
     fn reduce(self: Rc<Self>, action: Self::Action) -> Rc<Self> {
         match action {
-            action::Card::Mode(mode) => {
+            Action::Mode(mode) => {
                 if self.mode == mode {
                     self
                 } else {
                     self.with_mode(mode).into()
                 }
             }
-            action::Card::DoubleClick(_) => {
+            Action::DoubleClick(_) => {
                 if self.mode == Presentation::View {
                     self.with_mode(Presentation::Edit).into()
                 } else {
                     self
                 }
             }
-            action::Card::Blur(event) => {
+            Action::Blur(event) => {
                 let target = event
                     .target_dyn_into::<HtmlElement>()
                     .expect("Expected event target HtmlElement.");
@@ -125,12 +131,12 @@ pub fn sec(props: &Props) -> Html {
 
     let double_click = &props.on_double_click;
     let double_click = closure!(clone state, clone double_click, |e: MouseEvent| {
-        state.dispatch(action::Card::DoubleClick(e.clone()));
+        state.dispatch(Action::DoubleClick(e.clone()));
         double_click.emit((id, e));
     });
 
     let on_blur = closure!(clone state, |e: FocusEvent| {
-        state.dispatch(action::Card::Blur(e));
+        state.dispatch(Action::Blur(e));
     });
 
     html! {

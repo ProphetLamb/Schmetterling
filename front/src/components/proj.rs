@@ -4,7 +4,11 @@ use std::collections::{BTreeSet, HashMap};
 use yew::prelude::*;
 use yew_router::prelude::Link;
 
-use crate::{action, components::doc, data::*, id, markup::Markup, MainRoute};
+use crate::{components::doc, data::*, id, markup::Markup, MainRoute};
+
+pub enum Action {
+    Add(id::Doc),
+}
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub struct State {
@@ -29,11 +33,11 @@ impl State {
 }
 
 impl Reducible for State {
-    type Action = action::Proj;
+    type Action = Action;
 
     fn reduce(self: std::rc::Rc<Self>, action: Self::Action) -> std::rc::Rc<Self> {
         match action {
-            action::Proj::Add(id) => {
+            Action::Add(id) => {
                 let mut state = (*self).clone();
                 state.children.insert(id, doc::Decl::with_id(id));
                 proj_upd(state).into()
@@ -54,7 +58,7 @@ pub fn proj(props: &Props) -> Html {
 
     let next_id = state.doc_next();
 
-    let add = Callback::from(closure!(clone state, |_| state.dispatch(action::Proj::Add(next_id))));
+    let add = Callback::from(closure!(clone state, |_| state.dispatch(Action::Add(next_id))));
 
     // Apply ordering to children
     let children = BTreeSet::<&doc::Decl>::from_iter(state.children.values());

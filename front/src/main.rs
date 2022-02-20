@@ -1,6 +1,5 @@
 #![recursion_limit = "1024"]
 
-pub mod action;
 pub mod components;
 pub mod data;
 pub mod id;

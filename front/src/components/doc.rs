@@ -5,7 +5,7 @@ use std::collections::{BTreeSet, HashMap};
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
-use crate::{action, data::*, id, markup::Markup};
+use crate::{data::*, id, markup::Markup};
 
 use super::{sec, text::*};
 
@@ -112,6 +112,13 @@ impl Card {
     }
 }
 
+pub enum Action {
+    Add(id::Card),
+    CardTitle((id::Card, String, Event)),
+    CardContent((id::Card, Markup, Event)),
+    DeclMode(Presentation),
+}
+
 #[derive(PartialEq, Debug, Clone)]
 pub struct State {
     pub id: id::Doc,
@@ -148,16 +155,16 @@ impl State {
 }
 
 impl Reducible for State {
-    type Action = action::Doc;
+    type Action = Action;
 
     fn reduce(self: std::rc::Rc<Self>, action: Self::Action) -> std::rc::Rc<Self> {
         match action {
-            action::Doc::Add(id) => {
+            Action::Add(id) => {
                 let mut state = (*self).clone();
                 state.children.insert(id, Card::with_id(id));
                 doc_upd_children(state).into()
             }
-            action::Doc::CardTitle((id, title, _)) => {
+            Action::CardTitle((id, title, _)) => {
                 if matches!(self.children.get(&id), Some(card) if card.title != title) {
                     let mut children = self.children.clone();
                     if let Some(card) = children.get_mut(&id) {
@@ -169,7 +176,7 @@ impl Reducible for State {
                     self
                 }
             }
-            action::Doc::CardContent((id, content, _)) => {
+            Action::CardContent((id, content, _)) => {
                 if matches!(self.children.get(&id), Some(card) if card.content != content) {
                     let mut state = (*self).clone();
                     if let Some(card) = state.children.get_mut(&id) {
@@ -180,7 +187,7 @@ impl Reducible for State {
                     self
                 }
             }
-            action::Doc::DeclMode(mode) => self.own_mode(mode).into(),
+            Action::DeclMode(mode) => self.own_mode(mode).into(),
         }
     }
 }
@@ -198,9 +205,9 @@ pub fn doc(props: &Props) -> Html {
     let next_id = state.card_next();
 
     let decl_edit = Callback::from(
-        closure!(clone state, |_| state.dispatch(action::Doc::DeclMode(Presentation::Edit))),
+        closure!(clone state, |_| state.dispatch(Action::DeclMode(Presentation::Edit))),
     );
-    let add = Callback::from(closure!(clone state, |_| state.dispatch(action::Doc::Add(next_id))));
+    let add = Callback::from(closure!(clone state, |_| state.dispatch(Action::Add(next_id))));
 
     html! {
     <section class="Document">
@@ -247,10 +254,9 @@ fn render_decl_edit_modal(state: &State) -> Html {
 }
 
 fn render_children_ord(props: &Props, state: UseReducerHandle<State>) -> Html {
-    let seg_title =
-        Callback::from(closure!(clone state, |p| state.dispatch(action::Doc::CardTitle(p))));
+    let seg_title = Callback::from(closure!(clone state, |p| state.dispatch(Action::CardTitle(p))));
     let seg_content =
-        Callback::from(closure!(clone state, |p| state.dispatch(action::Doc::CardContent(p))));
+        Callback::from(closure!(clone state, |p| state.dispatch(Action::CardContent(p))));
     // Apply ordering to children
     let children = BTreeSet::<&Card>::from_iter(state.children.values());
 
