@@ -58,7 +58,7 @@ footer {
 }
 
 .btn-circle {
-  @include circle(1.5rem);
+  @include circle(1.25rem);
   border-color: $primary;
   @extend .bg-transparent;
   > .fa {
