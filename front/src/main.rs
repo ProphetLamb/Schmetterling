@@ -1,6 +1,8 @@
 #![recursion_limit = "1024"]
 
+pub mod action;
 pub mod components;
+pub mod data;
 pub mod id;
 pub mod markup;
 
@@ -17,7 +19,7 @@ use crate::components::*;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[derive(Routable, PartialEq, Clone, Debug)]
-pub enum Route {
+pub enum MainRoute {
     #[at("/")]
     Home,
     #[at("/imprint")]
@@ -25,14 +27,46 @@ pub enum Route {
     #[not_found]
     #[at("/404")]
     NotFound,
+    #[at("/proj/:rem")]
+    Project,
 }
 
-impl Route {
+impl MainRoute {
     pub fn switch(&self) -> Html {
         match self {
-            Route::Home => html! {<Home/>},
-            Route::NotFound => html! {<PageNotFound/>},
-            Route::Imprint => html! {<Imprint/>},
+            MainRoute::Home => html! {<Home/>},
+            MainRoute::NotFound => html! {<PageNotFound/>},
+            MainRoute::Imprint => html! {<Imprint/>},
+            MainRoute::Project => html! {
+                <Switch<ProjRoute> render={Switch::render(ProjRoute::switch)} />
+            },
+        }
+    }
+}
+
+#[derive(Routable, PartialEq, Clone, Debug)]
+pub enum ProjRoute {
+    #[at("/proj/:proj/doc/:doc")]
+    Doc { proj: u64, doc: u64 },
+    #[at("/proj/:proj/")]
+    Proj { proj: u64 },
+    #[not_found]
+    #[at("/proj/404")]
+    NotFound,
+}
+
+impl ProjRoute {
+    pub fn switch(&self) -> Html {
+        match self {
+            ProjRoute::Proj { proj } => html! {
+                <proj::Project id={id::Proj{ value: *proj }} />
+            },
+            ProjRoute::Doc { proj, doc } => html! {
+                <doc::Document id={id::Doc{ proj: (*proj).into(), value: *doc }} />
+            },
+            ProjRoute::NotFound => html! {
+                <Redirect<MainRoute> to={MainRoute::NotFound} />
+            },
         }
     }
 }
@@ -58,19 +92,21 @@ impl Component for App {
                 </a>
                 <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><Link<Route> classes="nav-link active" to={Route::Home}>{"Home"}</Link<Route>></li>
+                    <li class="nav-item">
+                        <Link<MainRoute> classes="nav-link active" to={MainRoute::Home}>{"Home"}</Link<MainRoute>>
+                    </li>
                 </ul>
                 </div>
             </div>
             </nav>
             <main>
-                <Switch<Route> render={Switch::render(Route::switch)} />
+                <Switch<MainRoute> render={Switch::render(MainRoute::switch)} />
             </main>
             <footer class="footer mt-auto py-3">
             <div class="d-flex justify-content-right flex-row flex-wrap">
                 <a class="text-muted nav-link" href="https://github.com/ProphetLamb/Schmetterling">{"Copyright (c) 2022 ProphetLamb"}</a>
-                <Link<Route> classes="text-muted nav-link" to={Route::Home}>{"Home"}</Link<Route>>
-                <Link<Route> classes="text-muted nav-link" to={Route::Imprint}>{"Imprint"}</Link<Route>>
+                <Link<MainRoute> classes="text-muted nav-link" to={MainRoute::Home}>{"Home"}</Link<MainRoute>>
+                <Link<MainRoute> classes="text-muted nav-link" to={MainRoute::Imprint}>{"Imprint"}</Link<MainRoute>>
             </div>
             </footer>
         </BrowserRouter>
@@ -122,10 +158,4 @@ fn main() {
 
 fn panic_set(key: &str, e: StorageError) -> ! {
     panic!("unable to create the key '{}'.\nError: {}", key, e)
-}
-fn panic_get(key: &str, e: StorageError) -> ! {
-    panic!("unable to get the created key '{}'.\nError: {}", key, e)
-}
-fn panic_ser(e: serde_json::Error) -> ! {
-    panic!("unable to serialize the value.\nError: {}", e)
 }

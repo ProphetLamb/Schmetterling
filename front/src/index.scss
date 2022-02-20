@@ -41,19 +41,24 @@ footer {
   @extend .bg-dark;
 }
 
-@mixin circle($diam) {
-  width: $diam;
-  height: $diam;
-  border-radius: $diam * 0.5;
-  font-size: $diam * 0.4;
+@mixin circle($size) {
+  font-size: $size;
+  width: 2.5em;
+  height: 2.5em;
+  margin: 3px;
+  padding: 0;
+  border-width: 0.2em;
+  border-radius: 50%;
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
 }
 
 .btn-circle {
-  @include circle(2rem);
-  text-align: center;
-  line-height: 1.4;
-  padding: 0;
-  border-width: 0.15rem;
+  @include circle(1.5rem);
   border-color: $primary;
   @extend .bg-transparent;
   > .fa {
@@ -82,7 +87,7 @@ footer {
     align-items: center;
     filter: opacity(0.5);
     > .card-title {
-      line-height: 0.1;
+      line-height: 0.15;
     }
     > .card-footer {
       @extend .d-flex;
@@ -103,7 +108,4 @@ footer {
       display: inherit;
     }
   }
-}
-
-.Document {
 }
