@@ -1,7 +1,7 @@
 pub mod doc;
-pub mod edt;
 pub mod proj;
 pub mod sec;
+pub mod text;
 
 use yew::prelude::*;
 

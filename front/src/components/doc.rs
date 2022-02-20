@@ -1,17 +1,122 @@
 use closure::closure;
+use log::error;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap};
+use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
 use crate::{action, data::*, id, markup::Markup};
 
-use super::{edt::*, sec};
+use super::{sec, text::*};
+
+#[derive(PartialEq, Eq, Debug, Clone, Serialize, Deserialize)]
+pub struct Decl {
+    pub id: id::Doc,
+    pub title: String,
+    pub summary: Markup,
+    pub order: u64,
+}
+
+impl Ord for Decl {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.order.cmp(&other.order)
+    }
+}
+
+impl PartialOrd for Decl {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.order.partial_cmp(&other.order)
+    }
+}
+
+impl Decl {
+    pub fn with_id(id: id::Doc) -> Self {
+        Self {
+            id,
+            title: format!("Document {}", id.value),
+            summary: Markup::md_str(""),
+            order: id.value,
+        }
+    }
+}
+
+pub type ChangeEvent<T> = Callback<(id::Doc, T)>;
+
+#[derive(Properties, PartialEq, Debug)]
+pub struct EditProps {
+    decl: Decl,
+    #[prop_or_default]
+    on_title_change: ChangeEvent<String>,
+    #[prop_or_default]
+    on_summary_change: ChangeEvent<Markup>,
+}
+
+#[function_component(Edit)]
+pub fn edit(props: &EditProps) -> Html {
+    let decl = props.decl.clone();
+    let id = decl.id;
+
+    let title = props.on_title_change.clone();
+    let title = Callback::from(move |e: Event| {
+        let input = e
+            .target_dyn_into::<HtmlInputElement>()
+            .expect("event target is HtmlInputElement");
+        title.emit((id, input.value()))
+    });
+
+    let summary = props.on_summary_change.clone();
+    let summary = Callback::from(move |(value, _): (Markup, Event)| summary.emit((id, value)));
+
+    html! {
+    <>
+        <div class="mb-3">
+            <label for="title" class="form-label">{"Title"}</label>
+            <input type="text" class="form-control" value={decl.title} id="title" onchange={title} />
+        </div>
+        <div class="mb-3">
+            <label for="summary" class="form-label">{"Summary"}</label>
+            <MarkupEdit mode={Presentation::Edit} value={decl.summary} id="summary" on_change={summary}/>
+        </div>
+    </>
+    }
+}
+
+#[derive(PartialEq, Eq, Debug, Clone, Serialize, Deserialize)]
+pub struct Card {
+    pub id: id::Card,
+    pub title: String,
+    pub content: Markup,
+    pub order: u64,
+}
+
+impl Ord for Card {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.order.cmp(&other.order)
+    }
+}
+
+impl PartialOrd for Card {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.order.partial_cmp(&other.order)
+    }
+}
+
+impl Card {
+    fn with_id(id: id::Card) -> Self {
+        Self {
+            id,
+            title: format!("Section {}", id.value),
+            content: Markup::default(),
+            order: id.value,
+        }
+    }
+}
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct State {
     pub id: id::Doc,
-    pub title: String,
-    pub title_mode: Presentation,
+    pub decl: Decl,
+    pub decl_mode: Presentation,
     pub children: HashMap<id::Card, Card>,
 }
 
@@ -23,30 +128,21 @@ impl State {
         }
     }
 
-    fn own_title_view(&self, title: String) -> Self {
-        Self {
-            id: self.id,
-            title,
-            children: self.children.clone(),
-            title_mode: Presentation::View,
-        }
-    }
-
     fn own_children(&self, children: HashMap<id::Card, Card>) -> Self {
         Self {
             id: self.id,
-            title: self.title.clone(),
+            decl: self.decl.clone(),
             children,
-            title_mode: Presentation::View,
+            decl_mode: Presentation::View,
         }
     }
 
     fn own_mode(&self, title_mode: Presentation) -> Self {
         Self {
             id: self.id,
-            title: self.title.clone(),
+            decl: self.decl.clone(),
             children: self.children.clone(),
-            title_mode,
+            decl_mode: title_mode,
         }
     }
 }
@@ -84,46 +180,7 @@ impl Reducible for State {
                     self
                 }
             }
-            action::Doc::Title(title) => {
-                if self.title != title {
-                    let state = self.own_title_view(title);
-                    doc_upd_title(state).into()
-                } else {
-                    self
-                }
-            }
-            action::Doc::TitleMode(mode) => self.own_mode(mode).into(),
-        }
-    }
-}
-
-#[derive(PartialEq, Eq, Debug, Clone, Serialize, Deserialize)]
-pub struct Card {
-    pub id: id::Card,
-    pub title: String,
-    pub content: Markup,
-    pub order: u64,
-}
-
-impl Ord for Card {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.order.cmp(&other.order)
-    }
-}
-
-impl PartialOrd for Card {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.order.partial_cmp(&other.order)
-    }
-}
-
-impl Card {
-    fn with_id(id: id::Card) -> Self {
-        Self {
-            id,
-            title: format!("Section {}", id.value),
-            content: Markup::default(),
-            order: id.value,
+            action::Doc::DeclMode(mode) => self.own_mode(mode).into(),
         }
     }
 }
@@ -136,44 +193,23 @@ pub struct Props {
 #[function_component(Document)]
 pub fn doc(props: &Props) -> Html {
     let id = props.id;
-    let state: UseReducerHandle<State> = use_reducer_eq(move || doc_get(id));
+    let state = use_reducer_eq(move || doc_get(id));
 
     let next_id = state.card_next();
 
-    let title = Callback::from(closure!(clone state, |(title, _)|{
-        state.dispatch(action::Doc::Title(title));
-    }));
-    let title_edit = Callback::from(closure!(clone state, |_|{
-        state.dispatch(action::Doc::TitleMode(Presentation::Edit));
-    }));
-    let title_view = Callback::from(closure!(clone state, |_|{
-        state.dispatch(action::Doc::TitleMode(Presentation::View));
-    }));
-
+    let decl_edit = Callback::from(
+        closure!(clone state, |_| state.dispatch(action::Doc::DeclMode(Presentation::Edit))),
+    );
     let add = Callback::from(closure!(clone state, |_| state.dispatch(action::Doc::Add(next_id))));
-    let card_title =
-        Callback::from(closure!(clone state, |p| state.dispatch(action::Doc::CardTitle(p))));
-    let card_content =
-        Callback::from(closure!(clone state, |p| state.dispatch(action::Doc::CardContent(p))));
 
-    // Apply ordering to children
-    let children = BTreeSet::<&Card>::from_iter(state.children.values());
     html! {
     <section class="Document">
-        <div class="text-center">
-            <TextEdit view_classes={classes!("display-5")} edit_classes={classes!("form-control", "display-5")} value={state.title.clone()} mode={state.title_mode} on_double_click={title_edit} on_change={title} on_blur={title_view} />
+    {render_decl_edit_modal(&*state)}
+        <div class="text-center" ondblclick={decl_edit}>
+            <span class="display-5">{state.decl.title.clone()}</span>
         </div>
         <div class="container">
-        {
-            for children.iter().map(|card| html!{
-            <sec::Section
-                id={card.id}
-                title={card.title.clone()}
-                content={card.content.clone()}
-                on_title_change={card_title.clone()}
-                on_content_change={card_content.clone()} />
-            })
-        }
+        { render_children_ord(props, state) }
         </div>
         <div class="d-flex m-3 justify-content-center">
             <button class="btn btn-circle" onclick={add}>
@@ -181,5 +217,54 @@ pub fn doc(props: &Props) -> Html {
             </button>
         </div>
     </section>
+    }
+}
+
+fn render_decl_edit_modal(state: &State) -> Html {
+    if state.decl_mode == Presentation::View {
+        return html! {<> </>};
+    }
+    error!("Opening modal!");
+    html! {
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">{state.decl.title.clone()}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <Edit decl={state.decl.clone()} />
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{"Close"}</button>
+            <button type="button" class="btn btn-primary">{"Save changes"}</button>
+        </div>
+        </div>
+    </div>
+    </div>
+    }
+}
+
+fn render_children_ord(props: &Props, state: UseReducerHandle<State>) -> Html {
+    let seg_title =
+        Callback::from(closure!(clone state, |p| state.dispatch(action::Doc::CardTitle(p))));
+    let seg_content =
+        Callback::from(closure!(clone state, |p| state.dispatch(action::Doc::CardContent(p))));
+    // Apply ordering to children
+    let children = BTreeSet::<&Card>::from_iter(state.children.values());
+
+    html! {
+    <>
+    {
+        for children.iter().map(|card| html!{
+        <sec::Section
+            id={card.id}
+            title={card.title.clone()}
+            content={card.content.clone()}
+            on_title_change={seg_title.clone()}
+            on_content_change={seg_content.clone()} />
+        })}
+    </>
     }
 }

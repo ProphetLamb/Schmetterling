@@ -2,17 +2,11 @@ use std::rc::Rc;
 
 use closure::closure;
 use wasm_bindgen::JsCast;
-use web_sys::HtmlDivElement;
-use web_sys::HtmlElement;
-use web_sys::HtmlInputElement;
-use web_sys::Node;
+use web_sys::{HtmlDivElement, HtmlElement, HtmlInputElement, Node};
 use yew::prelude::*;
 
-use super::edt::{MarkupEdit, Presentation};
-use crate::action;
-use crate::data::*;
-use crate::id;
-use crate::markup::*;
+use super::text::{MarkupEdit, Presentation};
+use crate::{action, id, markup::*};
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct State {
@@ -90,9 +84,7 @@ fn map_parent<T: JsCast, F: Fn(HtmlElement) -> Result<T, HtmlElement>>(
     None
 }
 
-pub type TitleChange = Callback<(id::Card, String, Event)>;
-pub type ContentChange = Callback<(id::Card, Markup, Event)>;
-pub type ModeChange = Callback<(id::Card, Presentation, Event)>;
+pub type ChangeEvent<T> = Callback<(id::Card, T, Event)>;
 pub type ClickEvent = Callback<(id::Card, MouseEvent)>;
 
 #[derive(Properties, PartialEq, Debug)]
@@ -101,9 +93,9 @@ pub struct Props {
     pub title: String,
     pub content: Markup,
     #[prop_or_default]
-    pub on_title_change: TitleChange,
+    pub on_title_change: ChangeEvent<String>,
     #[prop_or_default]
-    pub on_content_change: ContentChange,
+    pub on_content_change: ChangeEvent<Markup>,
     #[prop_or_default]
     pub on_click: ClickEvent,
     #[prop_or_default]

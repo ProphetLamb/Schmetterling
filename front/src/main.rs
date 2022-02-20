@@ -6,7 +6,7 @@ pub mod data;
 pub mod id;
 pub mod markup;
 
-use gloo_console::{error, info};
+use gloo_console::{error, info, warn};
 use gloo_storage::{errors::StorageError, LocalStorage, Storage};
 use serde::{Deserialize, Serialize};
 use yew::prelude::*;
@@ -110,10 +110,7 @@ where
     match LocalStorage::get(key) {
         Ok(set) => set,
         Err(err) => {
-            error!(format!(
-                "key {} not found. Creating key instead.\nError: {}",
-                key, err
-            ));
+            warn!(format!("{}", err));
             let value = f();
             set(key, value)
         }

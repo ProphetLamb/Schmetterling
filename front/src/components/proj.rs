@@ -4,12 +4,12 @@ use std::collections::{BTreeSet, HashMap};
 use yew::prelude::*;
 use yew_router::prelude::Link;
 
-use crate::{action, data::*, id, markup::Markup, MainRoute};
+use crate::{action, components::doc, data::*, id, markup::Markup, MainRoute};
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub struct State {
     pub id: id::Proj,
-    pub children: HashMap<id::Doc, Doc>,
+    pub children: HashMap<id::Doc, doc::Decl>,
 }
 
 impl State {
@@ -35,40 +35,9 @@ impl Reducible for State {
         match action {
             action::Proj::Add(id) => {
                 let mut state = (*self).clone();
-                state.children.insert(id, Doc::with_id(id));
+                state.children.insert(id, doc::Decl::with_id(id));
                 proj_upd(state).into()
             }
-        }
-    }
-}
-
-#[derive(PartialEq, Eq, Debug, Clone, Serialize, Deserialize)]
-pub struct Doc {
-    pub id: id::Doc,
-    pub title: String,
-    pub summary: Markup,
-    pub order: u64,
-}
-
-impl Ord for Doc {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.order.cmp(&other.order)
-    }
-}
-
-impl PartialOrd for Doc {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.order.partial_cmp(&other.order)
-    }
-}
-
-impl Doc {
-    fn with_id(id: id::Doc) -> Self {
-        Self {
-            id,
-            title: format!("Document {}", id.value),
-            summary: Markup::md_str(""),
-            order: id.value,
         }
     }
 }
@@ -88,13 +57,12 @@ pub fn proj(props: &Props) -> Html {
     let add = Callback::from(closure!(clone state, |_| state.dispatch(action::Proj::Add(next_id))));
 
     // Apply ordering to children
-    let children = BTreeSet::<&Doc>::from_iter(state.children.values());
+    let children = BTreeSet::<&doc::Decl>::from_iter(state.children.values());
     html! {
         <div class="container">
             <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
             {
                 for children.iter().map(|doc| {
-                    let id = doc.id;
                     html!{
                 <div class="ProjCard">
                     <div class="card-header">

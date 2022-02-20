@@ -1,6 +1,6 @@
 use std::collections::{hash_map::Entry::*, HashMap};
 
-use crate::components::{doc, edt::Presentation, proj, sec};
+use crate::components::{doc, proj, text::Presentation};
 use crate::{id, markup::Markup};
 
 pub fn proj_get(id: id::Proj) -> proj::State {
@@ -18,34 +18,29 @@ pub fn doc_upd_children(state: doc::State) -> doc::State {
 
 pub fn doc_get(id: id::Doc) -> doc::State {
     let children = crate::get_or_create(&format!("{}", id), HashMap::default);
-    let title = if let Some(doc) = proj_get(id.proj).children.get(&id) {
-        doc.title.clone()
+    let decl = if let Some(doc) = proj_get(id.proj).children.get(&id) {
+        doc.clone()
     } else {
-        format!("Document {}", id.value)
+        doc::Decl::with_id(id)
     };
     doc::State {
         id,
-        title,
-        title_mode: Presentation::View,
+        decl,
+        decl_mode: Presentation::View,
         children,
     }
 }
 
-pub fn doc_upd_title(state: doc::State) -> doc::State {
-    let mut proj = proj_get(state.id.proj);
-    match proj.children.entry(state.id) {
+pub fn doc_upd_decl(decl: doc::Decl) -> doc::Decl {
+    let mut proj = proj_get(decl.id.proj);
+    match proj.children.entry(decl.id) {
         Occupied(mut entry) => {
-            entry.get_mut().title = state.title.clone();
+            entry.insert(decl.clone());
         }
         Vacant(entry) => {
-            entry.insert(proj::Doc {
-                id: state.id,
-                title: state.title.clone(),
-                summary: Markup::md_str(""),
-                order: state.id.value,
-            });
+            entry.insert(decl.clone());
         }
     }
     proj_upd(proj);
-    state
+    decl
 }

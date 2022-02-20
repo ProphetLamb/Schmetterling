@@ -104,6 +104,8 @@ pub struct MarkupProps {
     #[prop_or_default]
     pub value: Markup,
     #[prop_or_default]
+    pub id: String,
+    #[prop_or_default]
     pub view_classes: Classes,
     #[prop_or_default]
     pub edit_classes: Classes,
@@ -173,7 +175,7 @@ pub fn markup(props: &MarkupProps) -> Html {
     match props.mode {
         Presentation::View => {
             html! {
-            <div class={props.view_classes.clone()} {onclick} {ondblclick} {oninput} {onblur}>
+            <div class={props.view_classes.clone()} id={props.id.clone()} {onclick} {ondblclick} {oninput} {onblur}>
                 {state.dom.clone()}
             </div>
             }
@@ -181,7 +183,7 @@ pub fn markup(props: &MarkupProps) -> Html {
         Presentation::Edit => {
             let onchange = markup_change(state, props);
             html! {
-            <textarea class={props.edit_classes.clone()} value={props.value.text.clone()} {onclick} {ondblclick} {oninput} {onchange} {onblur} />
+            <textarea class={props.edit_classes.clone()} value={props.value.text.clone()} id={props.id.clone()} {onclick} {ondblclick} {oninput} {onchange} {onblur} />
             }
         }
     }
