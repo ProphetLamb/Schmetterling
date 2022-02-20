@@ -3,7 +3,7 @@ use std::collections::BTreeSet;
 use yew::prelude::*;
 use yew_router::prelude::Link;
 
-use crate::{action, data, id, ProjRoute};
+use crate::{action, data, id, MainRoute};
 #[derive(Properties, PartialEq, Debug)]
 pub struct Props {
     pub id: id::Proj,
@@ -27,12 +27,12 @@ pub fn proj(props: &Props) -> Html {
                 for children.iter().map(|doc| {
                     let id = doc.id;
                     html!{
-                <div class="col card shadow-sm">
-                    <span class="card-header card-title">{doc.title.clone()}</span>
-                    <span class="card-body">{doc.summary.to_dom()}</span>
-                    <div class="card-footer">
-                        <Link<ProjRoute> classes={classes!("btn", "btn-light")} to={ProjRoute::Doc{proj: id.proj.value, doc: id.value}}>{"View"}</Link<ProjRoute>>
+                <div class="ProjCard">
+                    <div class="card-header">
+                        <Link<MainRoute> classes={classes!("card-title")} to={MainRoute::Document{doc: {doc.id} }}>{doc.title.clone()}</Link<MainRoute>>
+                        <i class="Icon fa fa-solid fa-edit fa-sm "></i>
                     </div>
+                    <span class="card-body">{doc.summary.to_dom()}</span>
                 </div>
                 }})
             }

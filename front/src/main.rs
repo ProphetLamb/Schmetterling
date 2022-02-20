@@ -20,52 +20,30 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[derive(Routable, PartialEq, Clone, Debug)]
 pub enum MainRoute {
+    #[not_found]
+    #[at("/404")]
+    NotFound,
     #[at("/")]
     Home,
     #[at("/imprint")]
     Imprint,
-    #[not_found]
-    #[at("/404")]
-    NotFound,
-    #[at("/proj/:rem")]
-    Project,
+    #[at("proj/:proj")]
+    Project { proj: id::Proj },
+    #[at("doc/:doc")]
+    Document { doc: id::Doc },
 }
 
 impl MainRoute {
     pub fn switch(&self) -> Html {
         match self {
-            MainRoute::Home => html! {<Home/>},
             MainRoute::NotFound => html! {<PageNotFound/>},
+            MainRoute::Home => html! {<Home/>},
             MainRoute::Imprint => html! {<Imprint/>},
-            MainRoute::Project => html! {
-                <Switch<ProjRoute> render={Switch::render(ProjRoute::switch)} />
+            MainRoute::Project { proj } => html! {
+                <proj::Project id={*proj} />
             },
-        }
-    }
-}
-
-#[derive(Routable, PartialEq, Clone, Debug)]
-pub enum ProjRoute {
-    #[at("/proj/:proj/doc/:doc")]
-    Doc { proj: u64, doc: u64 },
-    #[at("/proj/:proj/")]
-    Proj { proj: u64 },
-    #[not_found]
-    #[at("/proj/404")]
-    NotFound,
-}
-
-impl ProjRoute {
-    pub fn switch(&self) -> Html {
-        match self {
-            ProjRoute::Proj { proj } => html! {
-                <proj::Project id={id::Proj{ value: *proj }} />
-            },
-            ProjRoute::Doc { proj, doc } => html! {
-                <doc::Document id={id::Doc{ proj: (*proj).into(), value: *doc }} />
-            },
-            ProjRoute::NotFound => html! {
-                <Redirect<MainRoute> to={MainRoute::NotFound} />
+            MainRoute::Document { doc } => html! {
+                <doc::Document id={*doc} />
             },
         }
     }

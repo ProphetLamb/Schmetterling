@@ -11,7 +11,20 @@ $fa-font-path: "./webfonts";
 @import "../font-awesome/scss/fontawesome.scss";
 @import "../font-awesome/scss/solid.scss";
 
-// Truncate
+html {
+  @extend .bg-dark;
+}
+
+main {
+  @extend .flex-shrink-0;
+  @extend .container;
+  min-height: 30rem;
+}
+
+footer {
+  @extend .bg-dark;
+}
+
 .css-truncate.css-truncate-overflow,
 .css-truncate .css-truncate-overflow,
 .css-truncate.css-truncate-target,
@@ -27,20 +40,6 @@ $fa-font-path: "./webfonts";
   vertical-align: top;
 }
 
-html {
-  @extend .bg-dark;
-}
-
-main {
-  @extend .flex-shrink-0;
-  @extend .container;
-  min-height: 30rem;
-}
-
-footer {
-  @extend .bg-dark;
-}
-
 @mixin circle($size) {
   font-size: $size;
   width: 2.5em;
@@ -49,6 +48,7 @@ footer {
   padding: 0;
   border-width: 0.2em;
   border-radius: 50%;
+  line-height: 2em;
   display: inline-block;
   text-decoration: none;
   text-align: center;
@@ -63,22 +63,51 @@ footer {
   @extend .bg-transparent;
   > .fa {
     color: $primary;
+    margin-bottom: 1em;
   }
   &:hover {
     @extend .bg-primary;
     > .fa {
-      color: $body-bg;
+      color: $color-contrast-light;
     }
   }
 }
 
-.Icon {
+.anchor-silent {
+  @extend .text-decoration-none;
+  color: $input-plaintext-color;
+}
+
+.flex-between-vcenter {
+  @extend .d-flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: justify;
+  -moz-text-align-last: center;
+  text-align-last: center;
+}
+
+.hover-primary {
   &:hover {
     color: $primary;
   }
 }
 
-.Card {
+.card-dodge {
+  @extend .card;
+  box-shadow: none;
+  border-color: transparent;
+  &:hover {
+    box-shadow: $card-box-shadow;
+    border-color: $card-border-color;
+  }
+}
+
+.Icon {
+  @extend .hover-primary;
+}
+
+.Section {
   @extend .card;
   @extend .pb-1;
   > .card-header {
@@ -107,5 +136,25 @@ footer {
     > .card-header > .Icon {
       display: inherit;
     }
+  }
+}
+
+.ProjCard {
+  @extend .col;
+  @extend .card-dodge;
+  @extend .shadow-sm;
+  > .card-header {
+    @extend .flex-between-vcenter;
+    min-height: 2em;
+    > .card-title {
+      @extend .anchor-silent;
+      line-height: 0;
+    }
+    > .Icon {
+      transform: scale(0);
+    }
+  }
+  &:hover > .card-header > .Icon {
+    transform: scale(1);
   }
 }

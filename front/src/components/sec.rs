@@ -28,8 +28,8 @@ pub struct Props {
     pub on_double_click: ClickEvent,
 }
 
-#[function_component(Card)]
-pub fn card(props: &Props) -> Html {
+#[function_component(Section)]
+pub fn sec(props: &Props) -> Html {
     let id = props.id;
     let state = use_reducer_eq(|| data::Card {
         mode: Presentation::View,
@@ -60,7 +60,7 @@ pub fn card(props: &Props) -> Html {
     });
 
     html! {
-    <div class="Card" id={format!("card-{}", id.value)} onclick={click} ondblclick={double_click} onblur={on_blur}>
+    <div class="Section" id={format!("card-{}", id.value)} onclick={click} ondblclick={double_click} onblur={on_blur}>
         <div class="card-header">
         if state.mode == Presentation::View {
             <span class="card-title">{props.title.clone()}</span>

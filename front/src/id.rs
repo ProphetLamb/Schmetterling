@@ -6,7 +6,7 @@ use nom::{
     IResult,
 };
 
-use std::fmt::Display;
+use std::{fmt::Display, str::FromStr};
 
 use serde::{de::Visitor, Deserialize, Serialize};
 
@@ -80,6 +80,39 @@ impl From<Doc> for u64 {
 impl From<Card> for u64 {
     fn from(val: Card) -> Self {
         val.value
+    }
+}
+
+impl FromStr for Proj {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match parse_proj_id(s) {
+            Ok((_, p)) => Ok(p),
+            Err(e) => Err(e.to_string()),
+        }
+    }
+}
+
+impl FromStr for Doc {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match parse_doc_id(s) {
+            Ok((_, p)) => Ok(p),
+            Err(e) => Err(e.to_string()),
+        }
+    }
+}
+
+impl FromStr for Card {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match parse_card_id(s) {
+            Ok((_, p)) => Ok(p),
+            Err(e) => Err(e.to_string()),
+        }
     }
 }
 

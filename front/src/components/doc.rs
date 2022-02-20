@@ -4,7 +4,7 @@ use yew::prelude::*;
 
 use crate::{action, data, id};
 
-use super::{card, edt::*};
+use super::{edt::*, sec};
 
 #[derive(Properties, PartialEq, Debug)]
 pub struct Props {
@@ -44,7 +44,7 @@ pub fn doc(props: &Props) -> Html {
         <div class="container">
         {
             for children.iter().map(|card| html!{
-            <card::Card
+            <sec::Section
                 id={card.id}
                 title={card.title.clone()}
                 content={card.content.clone()}
