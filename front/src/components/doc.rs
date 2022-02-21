@@ -1,5 +1,4 @@
 use closure::closure;
-use log::error;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap};
 use web_sys::HtmlInputElement;
@@ -14,7 +13,7 @@ pub struct Decl {
     pub id: id::Doc,
     pub title: String,
     pub summary: Markup,
-    pub order: u64,
+    pub order: u32,
 }
 
 impl Ord for Decl {
@@ -83,10 +82,10 @@ pub fn edit(props: &EditProps) -> Html {
 
 #[derive(PartialEq, Eq, Debug, Clone, Serialize, Deserialize)]
 pub struct Card {
-    pub id: id::Card,
+    pub id: id::Sec,
     pub title: String,
     pub content: Markup,
-    pub order: u64,
+    pub order: u32,
 }
 
 impl Ord for Card {
@@ -102,7 +101,7 @@ impl PartialOrd for Card {
 }
 
 impl Card {
-    fn with_id(id: id::Card) -> Self {
+    fn with_id(id: id::Sec) -> Self {
         Self {
             id,
             title: format!("Section {}", id.value),
@@ -113,9 +112,9 @@ impl Card {
 }
 
 pub enum Action {
-    Add(id::Card),
-    CardTitle((id::Card, String, Event)),
-    CardContent((id::Card, Markup, Event)),
+    Add(id::Sec),
+    CardTitle((id::Sec, String, Event)),
+    CardContent((id::Sec, Markup, Event)),
     DeclMode(Presentation),
 }
 
@@ -124,18 +123,18 @@ pub struct State {
     pub id: id::Doc,
     pub decl: Decl,
     pub decl_mode: Presentation,
-    pub children: HashMap<id::Card, Card>,
+    pub children: HashMap<id::Sec, Card>,
 }
 
 impl State {
-    pub fn card_next(&self) -> id::Card {
-        id::Card {
-            value: self.children.len() as u64,
+    pub fn card_next(&self) -> id::Sec {
+        id::Sec {
+            value: self.children.len() as u32,
             doc: self.id,
         }
     }
 
-    fn own_children(&self, children: HashMap<id::Card, Card>) -> Self {
+    fn own_children(&self, children: HashMap<id::Sec, Card>) -> Self {
         Self {
             id: self.id,
             decl: self.decl.clone(),

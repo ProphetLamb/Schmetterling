@@ -1,3 +1,4 @@
+use gloo_console::error;
 use pulldown_cmark::{Alignment, CodeBlockKind, Event, Options, Parser, Tag};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
@@ -245,7 +246,7 @@ pub fn render_markdown(src: &str) -> Html {
             Event::Rule => add_child!(VTag::new("hr").into()),
             Event::SoftBreak => add_child!(VText::new("\n").into()),
             Event::HardBreak => add_child!(VTag::new("br").into()),
-            _ => log::error!("Unknown event: {:#?}", ev),
+            _ => error!(format!("Unknown event: {:#?}", ev)),
         }
     }
 

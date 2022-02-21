@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use closure::closure;
 use wasm_bindgen::JsCast;
-use web_sys::{HtmlDivElement, HtmlElement, HtmlInputElement, Node};
+use web_sys::{Element, HtmlDivElement, HtmlElement, HtmlInputElement, Node};
 use yew::prelude::*;
 
 use super::text::{MarkupEdit, Presentation};
@@ -53,7 +53,13 @@ impl Reducible for State {
                     .target_dyn_into::<HtmlElement>()
                     .expect("Expected event target HtmlElement.");
                 if let Some(card) = map_parent(target, |n| match n.dyn_into::<HtmlDivElement>() {
-                    Ok(div) if div.class_list().contains("Section") => Ok(div),
+                    Ok(div)
+                        if div
+                            .class_list()
+                            .contains("Section") =>
+                    {
+                        Ok(div)
+                    }
                     Ok(div) => Err(div.into()),
                     Err(n) => Err(n.unchecked_into::<HtmlElement>()),
                 }) {
@@ -90,12 +96,12 @@ fn map_parent<T: JsCast, F: Fn(HtmlElement) -> Result<T, HtmlElement>>(
     None
 }
 
-pub type ChangeEvent<T> = Callback<(id::Card, T, Event)>;
-pub type ClickEvent = Callback<(id::Card, MouseEvent)>;
+pub type ChangeEvent<T> = Callback<(id::Sec, T, Event)>;
+pub type ClickEvent = Callback<(id::Sec, MouseEvent)>;
 
 #[derive(Properties, PartialEq, Debug)]
 pub struct Props {
-    pub id: id::Card,
+    pub id: id::Sec,
     pub title: String,
     pub content: Markup,
     #[prop_or_default]

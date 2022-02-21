@@ -12,18 +12,18 @@ use serde::{de::Visitor, Deserialize, Serialize};
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct Proj {
-    pub value: u64,
+    pub value: u32,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct Doc {
     pub proj: Proj,
-    pub value: u64,
+    pub value: u32,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub struct Card {
-    pub value: u64,
+pub struct Sec {
+    pub value: u32,
     pub doc: Doc,
 }
 
@@ -39,7 +39,7 @@ impl Display for Doc {
     }
 }
 
-impl Display for Card {
+impl Display for Sec {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}&card={}", self.doc, self.value)
     }
@@ -58,27 +58,27 @@ fn parse_doc_id(input: &str) -> IResult<&str, Doc> {
     Ok((input, Doc { value: id, proj }))
 }
 
-fn parse_card_id(input: &str) -> IResult<&str, Card> {
+fn parse_card_id(input: &str) -> IResult<&str, Sec> {
     let (input, doc) = parse_doc_id(input)?;
     let (input, _) = tag("&card=")(input)?;
     let (input, id) = map_res(recognize(digit1), str::parse)(input)?;
-    Ok((input, Card { value: id, doc }))
+    Ok((input, Sec { value: id, doc }))
 }
 
-impl From<u64> for Proj {
-    fn from(value: u64) -> Self {
+impl From<u32> for Proj {
+    fn from(value: u32) -> Self {
         Proj { value }
     }
 }
 
-impl From<Doc> for u64 {
+impl From<Doc> for u32 {
     fn from(val: Doc) -> Self {
         val.value
     }
 }
 
-impl From<Card> for u64 {
-    fn from(val: Card) -> Self {
+impl From<Sec> for u32 {
+    fn from(val: Sec) -> Self {
         val.value
     }
 }
@@ -105,7 +105,7 @@ impl FromStr for Doc {
     }
 }
 
-impl FromStr for Card {
+impl FromStr for Sec {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -134,7 +134,7 @@ impl Serialize for Doc {
     }
 }
 
-impl Serialize for Card {
+impl Serialize for Sec {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -161,7 +161,7 @@ impl<'de> Deserialize<'de> for Doc {
     }
 }
 
-impl<'de> Deserialize<'de> for Card {
+impl<'de> Deserialize<'de> for Sec {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -213,7 +213,7 @@ impl<'de> Visitor<'de> for DocIdVisitor {
 struct CardIdVisitor {}
 
 impl<'de> Visitor<'de> for CardIdVisitor {
-    type Value = Card;
+    type Value = Sec;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         formatter.write_str("\"")

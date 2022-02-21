@@ -26,7 +26,7 @@ impl State {
 
     pub fn doc_next(&self) -> id::Doc {
         id::Doc {
-            value: self.children.len() as u64,
+            value: self.children.len() as u32,
             proj: self.id,
         }
     }
