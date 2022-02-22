@@ -4,7 +4,8 @@ use std::collections::{BTreeSet, HashMap};
 use web_sys::HtmlInputElement;
 use yew::prelude::*;
 
-use crate::{data::*, id, markup::Markup};
+use crate::data::*;
+use schling_common::{id, markup::Markup};
 
 use super::{sec, text::*};
 

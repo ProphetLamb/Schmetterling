@@ -4,7 +4,7 @@ use std::rc::Rc;
 use web_sys::{HtmlInputElement, HtmlTextAreaElement};
 use yew::prelude::*;
 
-use crate::markup::*;
+use schling_common::markup::*;
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum Presentation {

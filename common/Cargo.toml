@@ -1,0 +1,19 @@
+[package]
+name = "schling-common"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "schling_common"
+
+[dependencies]
+pulldown-cmark = { version = "0.9", optional = true }
+paste = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+nom = "7.1"
+web-sys = { version = "0.3", optional = true }
+yew = { version = "0.19", optional = true }
+gloo-console = { version = "0.2", optional = true }
+
+[features]
+yew = ["dep:gloo-console", "dep:pulldown-cmark", "dep:web-sys", "dep:yew"]

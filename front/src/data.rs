@@ -1,7 +1,7 @@
 use std::collections::{hash_map::Entry::*, HashMap};
 
 use crate::components::{doc, proj, text::Presentation};
-use crate::id;
+use schling_common::id;
 
 pub fn proj_get(id: id::Proj) -> proj::State {
     crate::get_or_create(&format!("{}", id), || proj::State::with_id(id))

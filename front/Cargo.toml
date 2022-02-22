@@ -1,22 +1,24 @@
 [package]
-name = "schmetterling-front"
+name = "schling-front"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 closure = "0.3.0"
 console_error_panic_hook = "0.1"
 gloo-storage = "0.2"
 gloo-console = "0.2"
-pulldown-cmark = "0.9"
+schling-common = { path = "../common", features = ["yew"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 wasm-bindgen = "0.2"
-web-sys = {version = "0.3", features = ["Node", "HtmlDivElement", "HtmlElement", "HtmlAnchorElement", "DomTokenList"] }
-wee_alloc = {version="0.4", optional = true}
+web-sys = { version = "0.3", features = [
+  "HtmlDivElement",
+  "HtmlElement",
+  "HtmlAnchorElement",
+  "DomTokenList",
+] }
+wee_alloc = { version = "0.4", optional = true }
 yew = "0.19"
 yew-agent = "0.1"
 yew-router = "0.16"
-nom = "7.1"

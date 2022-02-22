@@ -2,11 +2,10 @@
 
 pub mod components;
 pub mod data;
-pub mod id;
-pub mod markup;
 
-use gloo_console::{error, info, warn};
+use gloo_console::{info, warn};
 use gloo_storage::{errors::StorageError, LocalStorage, Storage};
+use schling_common::id;
 use serde::{Deserialize, Serialize};
 use yew::prelude::*;
 use yew_router::prelude::*;

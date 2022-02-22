@@ -2,11 +2,11 @@ use std::rc::Rc;
 
 use closure::closure;
 use wasm_bindgen::JsCast;
-use web_sys::{Element, HtmlDivElement, HtmlElement, HtmlInputElement, Node};
+use web_sys::{HtmlDivElement, HtmlElement, HtmlInputElement, Node};
 use yew::prelude::*;
 
 use super::text::{MarkupEdit, Presentation};
-use crate::{id, markup::*};
+use schling_common::{id, markup::*};
 
 pub enum Action {
     Mode(Presentation),
@@ -53,13 +53,7 @@ impl Reducible for State {
                     .target_dyn_into::<HtmlElement>()
                     .expect("Expected event target HtmlElement.");
                 if let Some(card) = map_parent(target, |n| match n.dyn_into::<HtmlDivElement>() {
-                    Ok(div)
-                        if div
-                            .class_list()
-                            .contains("Section") =>
-                    {
-                        Ok(div)
-                    }
+                    Ok(div) if div.class_list().contains("Section") => Ok(div),
                     Ok(div) => Err(div.into()),
                     Err(n) => Err(n.unchecked_into::<HtmlElement>()),
                 }) {

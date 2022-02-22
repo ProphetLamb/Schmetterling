@@ -7,7 +7,7 @@ pub mod text;
 use yew::prelude::*;
 
 use super::proj::Project;
-use crate::{id, markup::*};
+use schling_common::{id, markup::*};
 
 pub struct Home;
 
