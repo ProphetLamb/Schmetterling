@@ -1,6 +1,6 @@
 [package]
 name = "schling-common"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
 
 [lib]
@@ -16,4 +16,4 @@ yew = { version = "0.19", optional = true }
 gloo-console = { version = "0.2", optional = true }
 
 [features]
-yew = ["dep:gloo-console", "dep:pulldown-cmark", "dep:web-sys", "dep:yew"]
+yew-wasm = ["dep:gloo-console", "dep:pulldown-cmark", "dep:web-sys", "dep:yew"]

@@ -1,6 +1,6 @@
 [package]
 name = "schling-front"
-version = "0.1.0"
+version = "0.0.1"
 edition = "2021"
 
 [dependencies]
@@ -8,7 +8,7 @@ closure = "0.3.0"
 console_error_panic_hook = "0.1"
 gloo-storage = "0.2"
 gloo-console = "0.2"
-schling-common = { path = "../common", features = ["yew"] }
+schling-common = { path = "../schling-common", features = ["yew-wasm"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 wasm-bindgen = "0.2"

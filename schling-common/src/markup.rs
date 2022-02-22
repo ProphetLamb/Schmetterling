@@ -1,14 +1,14 @@
-#[cfg(feature = "yew")]
+#[cfg(feature = "yew-wasm")]
 use gloo_console::error;
-#[cfg(feature = "yew")]
+#[cfg(feature = "yew-wasm")]
 use pulldown_cmark::{Alignment, CodeBlockKind, Event, Options, Parser, Tag};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
-#[cfg(feature = "yew")]
+#[cfg(feature = "yew-wasm")]
 use web_sys::Element;
-#[cfg(feature = "yew")]
+#[cfg(feature = "yew-wasm")]
 use yew::virtual_dom::{VNode, VTag, VText};
-#[cfg(feature = "yew")]
+#[cfg(feature = "yew-wasm")]
 use yew::{html, Classes, Component, Context, Html, NodeRef, Properties};
 
 #[derive(Default, PartialEq, Eq, Debug, Serialize, Deserialize)]
@@ -102,7 +102,7 @@ impl Display for MarkupLang {
 
 impl Markup {
     /// Creates the VDOM representation of the `Markup`.
-    #[cfg(feature = "yew")]
+    #[cfg(feature = "yew-wasm")]
     pub fn to_dom(&self) -> Html {
         match self.lang {
             MarkupLang::Html => html!(<RawHtml inner_html={self.text.to_owned()}/>),
@@ -111,20 +111,20 @@ impl Markup {
     }
 }
 
-#[cfg(feature = "yew")]
+#[cfg(feature = "yew-wasm")]
 #[derive(Debug, Clone, Eq, PartialEq, Properties)]
 pub struct RawHtmlProps {
     pub inner_html: String,
 }
 
 /// Embeds the content of the `inner_html` string into the VDOM.
-#[cfg(feature = "yew")]
+#[cfg(feature = "yew-wasm")]
 pub struct RawHtml {
     props: RawHtmlProps,
     node_ref: NodeRef,
 }
 
-#[cfg(feature = "yew")]
+#[cfg(feature = "yew-wasm")]
 impl Component for RawHtml {
     type Message = ();
     type Properties = RawHtmlProps;
@@ -171,7 +171,7 @@ impl Component for RawHtml {
 /// Note that this has a complexity of O(n),
 /// where n is the number of classes already in VTag plus
 /// the number of classes to be added.
-#[cfg(feature = "yew")]
+#[cfg(feature = "yew-wasm")]
 fn add_class(vtag: &mut VTag, class: impl Into<Classes>) {
     let mut classes: Classes = vtag
         .attributes
@@ -185,7 +185,7 @@ fn add_class(vtag: &mut VTag, class: impl Into<Classes>) {
 
 /// Renders a string of Markdown to HTML with the default options (footnotes
 /// disabled, tables enabled).
-#[cfg(feature = "yew")]
+#[cfg(feature = "yew-wasm")]
 pub fn render_markdown(src: &str) -> Html {
     let mut elems = vec![];
     let mut spine = vec![];
@@ -269,7 +269,7 @@ pub fn render_markdown(src: &str) -> Html {
     }
 }
 
-#[cfg(feature = "yew")]
+#[cfg(feature = "yew-wasm")]
 fn make_tag(t: Tag) -> VTag {
     match t {
         Tag::Paragraph => VTag::new("p"),

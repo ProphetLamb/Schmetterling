@@ -1,0 +1,32 @@
+services:
+  schling-writings:
+    container_name: schling-writings
+    restart: always
+    depends_on:
+      - writings-db
+    build:
+      context: .
+      dockerfile: ./schling-writings/Dockerfile
+    environment:
+      DATABASE_URL: postgres://postgres:$WRITINGS_DB_PASSWORD@writings-db/writings
+      JWT_SECRET_KEY: $JWT_SECRET_KEY
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8001/"]
+      interval: 1m
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    ports:
+      - 8001:8001
+  writings-db:
+    image: postgres:14-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: writings
+      POSTGRES_PASSWORD: $WRITINGS_DB_PASSWORD
+    healthcheck:
+      test: ["CMD-SHELL", "ps_isready -U postgres"]
+      interval: 1m
+      timeout: 5s
+      retries: 3
+      start_period: 10s

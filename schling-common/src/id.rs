@@ -23,24 +23,6 @@ pub struct Sec {
     pub doc: Doc,
 }
 
-impl Display for Proj {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "proj={}", self.value)
-    }
-}
-
-impl Display for Doc {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}&doc={}", self.proj, self.value)
-    }
-}
-
-impl Display for Sec {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}&card={}", self.doc, self.value)
-    }
-}
-
 impl From<Proj> for String {
     fn from(val: Proj) -> Self {
         format!("{:08X}", val.value)
@@ -123,12 +105,20 @@ impl FromStr for Sec {
 
 macro_rules! serde_str {
     ($type:ty) => {
+        impl Display for $type {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                let s: String = self.clone().into();
+                write!(f, "{}", s)
+            }
+        }
+
         impl Serialize for $type {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
                 S: serde::Serializer,
             {
-                serializer.serialize_str(&self.to_string())
+                let s: String = self.clone().into();
+                serializer.serialize_str(&s)
             }
         }
 
