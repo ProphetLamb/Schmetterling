@@ -6,22 +6,36 @@ use std::{fmt::Display, str::FromStr};
 
 use serde::{de::Visitor, Deserialize, Serialize};
 
+#[macro_export]
+macro_rules! ord_by {
+    ($type:tt, $field:ident) => {
+        impl PartialOrd for $type {
+            fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+                self.$field.partial_cmp(&other.$field)
+            }
+        }
+    };
+}
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct Proj {
     pub value: u32,
 }
+ord_by!(Proj, value);
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct Doc {
     pub proj: Proj,
     pub value: u32,
 }
+ord_by!(Doc, value);
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct Sec {
     pub value: u32,
     pub doc: Doc,
 }
+ord_by!(Sec, value);
 
 impl From<Proj> for String {
     fn from(val: Proj) -> Self {

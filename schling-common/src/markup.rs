@@ -4,6 +4,7 @@ use gloo_console::error;
 use pulldown_cmark::{Alignment, CodeBlockKind, Event, Options, Parser, Tag};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Display, Formatter};
+use strum_macros::EnumIter;
 #[cfg(feature = "yew-wasm")]
 use web_sys::Element;
 #[cfg(feature = "yew-wasm")]
@@ -72,7 +73,7 @@ impl Display for Markup {
     }
 }
 
-#[derive(PartialEq, Debug, Eq, Clone, Copy, Serialize, Deserialize)]
+#[derive(EnumIter, PartialEq, Debug, Eq, Clone, Copy, Serialize, Deserialize)]
 pub enum MarkupLang {
     Html,
     Md,

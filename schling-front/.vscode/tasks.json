@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "css:build",
+      "path": ".",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: css:build - schling-front",
+      "detail": "tailwindcss -i ./src/style.css -o ./css/style.min.css --minify"
+    },
+    {
+      "type": "npm",
+      "script": "dev",
+      "path": ".",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: dev - schling-front",
+      "detail": "trunk serve"
+    }
+  ]
+}
