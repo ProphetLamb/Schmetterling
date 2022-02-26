@@ -3,19 +3,18 @@
 pub mod components;
 pub mod data;
 pub mod pages;
-
+pub mod route;
 use yew::prelude::*;
-use yew_router::prelude::*;
 
-use crate::pages::*;
+use crate::{components::*, pages::home::Home};
 
 #[cfg(feature = "wee_alloc")]
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-struct App;
+struct Main;
 
-impl Component for App {
+impl Component for Main {
     type Message = ();
 
     type Properties = ();
@@ -25,11 +24,17 @@ impl Component for App {
     }
 
     fn view(&self, _ctx: &Context<Self>) -> Html {
-        html! {}
+        html! {
+        <>
+            <Navbar/>
+            <Home/>
+            <Footer/>
+        </>
+        }
     }
 }
 
 fn main() {
     console_error_panic_hook::set_once();
-    yew::start_app::<App>();
+    yew::start_app::<Main>();
 }

@@ -6,55 +6,6 @@ use std::{fmt::Display, str::FromStr};
 
 use serde::{de::Visitor, Deserialize, Serialize};
 
-#[macro_export]
-macro_rules! ord_by {
-    ($type:tt, $field:ident) => {
-        impl PartialOrd for $type {
-            fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-                self.$field.partial_cmp(&other.$field)
-            }
-        }
-    };
-}
-
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub struct Proj {
-    pub value: u32,
-}
-ord_by!(Proj, value);
-
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub struct Doc {
-    pub proj: Proj,
-    pub value: u32,
-}
-ord_by!(Doc, value);
-
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
-pub struct Sec {
-    pub value: u32,
-    pub doc: Doc,
-}
-ord_by!(Sec, value);
-
-impl From<Proj> for String {
-    fn from(val: Proj) -> Self {
-        format!("{:08X}", val.value)
-    }
-}
-
-impl From<Doc> for String {
-    fn from(val: Doc) -> Self {
-        format!("{}{:08X}", val.proj, val.value)
-    }
-}
-
-impl From<Sec> for String {
-    fn from(val: Sec) -> Self {
-        format!("{}{:08X}", val.doc, val.value)
-    }
-}
-
 fn is_hex_digit(c: char) -> bool {
     c.is_digit(16)
 }
@@ -67,55 +18,101 @@ fn parse_hex8(input: &str) -> IResult<&str, u32> {
     map_res(take_while_m_n(8, 8, is_hex_digit), from_hex8)(input)
 }
 
-fn parse_proj(input: &str) -> IResult<&str, Proj> {
-    let (input, value) = parse_hex8(input)?;
-    Ok((input, Proj { value }))
-}
-
-fn parse_doc(input: &str) -> IResult<&str, Doc> {
-    let (input, proj) = parse_proj(input)?;
-    let (input, value) = parse_hex8(input)?;
-    Ok((input, Doc { value, proj }))
-}
-
-fn parse_sec(input: &str) -> IResult<&str, Sec> {
-    let (input, doc) = parse_doc(input)?;
-    let (input, value) = parse_hex8(input)?;
-    Ok((input, Sec { value, doc }))
-}
-
-impl FromStr for Proj {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_proj(s) {
-            Ok((_, p)) => Ok(p),
-            Err(e) => Err(e.to_string()),
+#[macro_export]
+macro_rules! ord_by {
+    ($type:tt, $field:ident) => {
+        impl PartialOrd for $type {
+            fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+                self.$field.partial_cmp(&other.$field)
+            }
         }
-    }
+    };
 }
 
-impl FromStr for Doc {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_doc(s) {
-            Ok((_, p)) => Ok(p),
-            Err(e) => Err(e.to_string()),
+macro_rules! hier_id {
+    ($name:ident: $ntype:ident) => {
+        #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+        pub struct $ntype {
+            pub value: u32,
         }
-    }
-}
+        ord_by!($ntype, value);
 
-impl FromStr for Sec {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match parse_sec(s) {
-            Ok((_, p)) => Ok(p),
-            Err(e) => Err(e.to_string()),
+        impl $ntype {
+            pub fn new(value: u32) -> Self {
+                Self { value }
+            }
         }
-    }
+
+        impl From<$ntype> for String {
+            fn from(val: $ntype) -> Self {
+                format!("{:08X}", val.value)
+            }
+        }
+
+        paste! { fn [<parse_ $name>](input: &str) -> IResult<&str, $ntype> {
+            let (input, value) = parse_hex8(input)?;
+            Ok((input, $ntype { value }))
+        } }
+
+        impl FromStr for $ntype {
+            type Err = String;
+
+            paste! {fn from_str(s: &str) -> Result<Self, Self::Err> {
+                match [<parse_ $name>](s) {
+                    Ok((_, p)) => Ok(p),
+                    Err(e) => Err(e.to_string()),
+                }
+            } }
+        }
+
+        impl From<$ntype> for u32 {
+            fn from($name: $ntype) -> Self {
+                $name.value
+            }
+        }
+    };
+    ($name:ident: $ntype:ident, $parent:ident: $ptype:ty) => {
+        #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+        pub struct $ntype {
+            pub value: u32,
+            pub $parent: $ptype,
+        }
+        ord_by!($ntype, value);
+
+        impl $ntype {
+            pub fn new(value: u32, $parent: $ptype) -> Self {
+                Self { value, $parent }
+            }
+        }
+
+        impl From<$ntype> for String {
+            fn from(val: $ntype) -> Self {
+                format!("{}{:08X}", val.$parent, val.value)
+            }
+        }
+
+        paste! { fn [<parse_ $name>] (input: &str) -> IResult<&str, $ntype> {
+            let (input, $parent) = [<parse_ $parent>](input)?;
+            let (input, value) = parse_hex8(input)?;
+            Ok((input, $ntype { value, $parent }))
+        } }
+
+        impl FromStr for $ntype {
+            type Err = String;
+
+            paste! {fn from_str(s: &str) -> Result<Self, Self::Err> {
+                match [<parse_ $name>](s) {
+                    Ok((_, p)) => Ok(p),
+                    Err(e) => Err(e.to_string()),
+                }
+            } }
+        }
+    };
 }
+
+hier_id!(proj: Proj);
+hier_id!(doc: Doc, proj: Proj);
+hier_id!(sec: Sec, doc: Doc);
 
 macro_rules! serde_str {
     ($type:ty) => {

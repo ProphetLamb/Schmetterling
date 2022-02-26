@@ -1,4 +1,6 @@
 pub mod id;
+#[cfg(feature = "yew-wasm")]
+pub mod key;
 pub mod markup;
 
 #[cfg(test)]
