@@ -3,8 +3,6 @@ pub mod sec;
 pub mod sec_list;
 
 use schling_common::markup::Markup;
-use wasm_bindgen::JsCast;
-use web_sys::Node;
 use yew::prelude::*;
 
 #[macro_export]
@@ -26,39 +24,6 @@ macro_rules! pass_thru {
             let $reducer = $reducer.clone();
             Callback::from(move |$event: $tevent| $reducer.dispatch($($action)*))
         }
-    };
-}
-
-#[macro_export]
-macro_rules! dyn_into {
-    ($js_obj:expr, $target:ty) => {{
-        use wasm_bindgen::JsCast;
-        $js_obj.and_then(|obj| obj.dyn_into::<$target>().ok())
-    }};
-}
-
-pub fn query_parents<N: JsCast, F: Fn(Node) -> Result<N, Node>>(
-    target: Option<Node>,
-    selector: F,
-) -> Option<N> {
-    let mut parent = target;
-
-    while let Some(target) = parent {
-        match selector(target) {
-            Ok(result) => return Some(result),
-            Err(target) => {
-                parent = target.parent_node();
-            }
-        }
-    }
-
-    return None;
-}
-
-#[macro_export]
-macro_rules! query_parents {
-    ($target:ident, $($selector:tt)*) => {
-        query_parents(dyn_into!($target, Node), $($selector)*)
     };
 }
 

@@ -7,7 +7,9 @@ edition = "2021"
 name = "schling_common"
 
 [dependencies]
+closure = "0.3"
 gloo-console = { version = "0.2", optional = true }
+multimap = "0.8"
 nom = "7.1"
 paste = "1.0"
 pulldown-cmark = { version = "0.9", optional = true }
@@ -17,6 +19,7 @@ strum_macros = "0.24"
 wasm-bindgen = { version = "0.2", optional = true }
 web-sys = { version = "0.3", optional = true }
 yew = { version = "0.19", optional = true }
+yew-agent = { version = "0.1", optional = true }
 
 [features]
 yew-wasm = [
@@ -25,4 +28,5 @@ yew-wasm = [
   "dep:wasm-bindgen",
   "dep:web-sys",
   "dep:yew",
+  "dep:yew-agent",
 ]

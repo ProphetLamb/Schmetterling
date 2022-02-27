@@ -3,11 +3,11 @@ use schling_common::{id, markup::Markup};
 use web_sys::{HtmlInputElement, HtmlTextAreaElement};
 use yew::prelude::*;
 
-use crate::{
-    components::code_area,
-    data::{self, Head},
-    dyn_into, query_parents,
-};
+use crate::code_area::CodeArea;
+use crate::components::code_area::CodeStyle;
+use crate::data::{self, Head};
+
+use super::code_area::Text;
 
 #[derive(Clone, Debug, PartialEq, Properties)]
 pub struct Props {
@@ -15,21 +15,6 @@ pub struct Props {
 }
 
 const SECTION_PREFIX: &str = "section-";
-
-macro_rules! query_parent_section {
-    ($target:ident) => {
-        query_parents!($target, |parent| match parent.dyn_into::<HtmlElement>() {
-            Ok(parent) => {
-                if parent.id().starts_with(SECTION_PREFIX) {
-                    Ok(parent)
-                } else {
-                    Err(parent.dyn_into::<Node>().unwrap())
-                }
-            }
-            Err(parent) => Err(parent.dyn_into::<Node>().unwrap()),
-        })
-    };
-}
 
 fn section_id(id: id::Sec) -> String {
     format!("{}{}", SECTION_PREFIX, id.value)
@@ -130,7 +115,10 @@ pub fn section(props: &Props) -> Html {
 
     let title = head.title;
     if state.edit {
-        let content = content.text;
+        let content = Text {
+            lines: content.text,
+            style: CodeStyle::default(),
+        };
         let upd_title = Callback::from(closure!(clone state, |e: Event| {
             if let Some(target) = e.target_dyn_into::<HtmlInputElement>() {
             let value = target.value();
@@ -147,7 +135,7 @@ pub fn section(props: &Props) -> Html {
             <div class="level">
                 <input class="input" type="text" placeholder="Section title" value={title} onchange={upd_title}/>
             </div>
-            <code_area::CodeArea id={section_content_id(id)} class="textarea section-content" value={content} placeholder="Section content" onchange={upd_content}/>
+            <CodeArea value={content} class="textarea section-content" placeholder="Section content"/>
             <div class="level mt-3">
                 <button class="button is-primary is-rounded" onclick={view}>{"Update"}</button>
             </div>
