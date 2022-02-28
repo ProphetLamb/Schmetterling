@@ -2,7 +2,7 @@ pub mod code_area;
 pub mod sec;
 pub mod sec_list;
 
-use schling_common::markup::Markup;
+use schling_common::{markup::Markup, source::ToDom};
 use yew::prelude::*;
 
 #[macro_export]

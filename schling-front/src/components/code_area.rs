@@ -1,7 +1,7 @@
 use gloo_console::warn;
 use schling_common::{
     key::{KeyRegistrar, Shortcut},
-    source::{Line, Text},
+    source::{Line, Text, ToDom},
 };
 use yew::prelude::*;
 use yew_agent::Dispatched;
@@ -90,7 +90,7 @@ pub fn code_area(props: &Props) -> Html {
     html! {
         <table {id} {class}>
             <tbody>
-            //{for value.symbols().map(render_line)}
+                {for value.symbols().map(render_line)}
             </tbody>
         </table>
     }

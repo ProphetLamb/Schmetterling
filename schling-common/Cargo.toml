@@ -12,10 +12,11 @@ gloo-console = { version = "0.2", optional = true }
 multimap = "0.8"
 nom = "7.1"
 paste = "1.0"
-pulldown-cmark = { version = "0.9", optional = true }
+pulldown-cmark = "0.9"
 serde = { version = "1.0", features = ["derive"] }
 strum = "0.24"
 strum_macros = "0.24"
+unicode_categories = "0.1"
 wasm-bindgen = { version = "0.2", optional = true }
 web-sys = { version = "0.3", optional = true }
 yew = { version = "0.19", optional = true }
@@ -24,7 +25,6 @@ yew-agent = { version = "0.1", optional = true }
 [features]
 yew-wasm = [
   "dep:gloo-console",
-  "dep:pulldown-cmark",
   "dep:wasm-bindgen",
   "dep:web-sys",
   "dep:yew",

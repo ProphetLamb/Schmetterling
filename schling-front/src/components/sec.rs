@@ -1,13 +1,11 @@
 use closure::closure;
-use schling_common::{id, markup::Markup};
+use schling_common::source::ToDom;
+use schling_common::{id, markup::Markup, source::Text};
 use web_sys::{HtmlInputElement, HtmlTextAreaElement};
 use yew::prelude::*;
 
 use crate::code_area::CodeArea;
-use crate::components::code_area::CodeStyle;
 use crate::data::{self, Head};
-
-use super::code_area::Text;
 
 #[derive(Clone, Debug, PartialEq, Properties)]
 pub struct Props {
@@ -115,10 +113,7 @@ pub fn section(props: &Props) -> Html {
 
     let title = head.title;
     if state.edit {
-        let content = Text {
-            lines: content.text,
-            style: CodeStyle::default(),
-        };
+        let content = Text { text: content.text };
         let upd_title = Callback::from(closure!(clone state, |e: Event| {
             if let Some(target) = e.target_dyn_into::<HtmlInputElement>() {
             let value = target.value();

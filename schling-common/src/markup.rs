@@ -12,6 +12,9 @@ use yew::virtual_dom::{VNode, VTag, VText};
 #[cfg(feature = "yew-wasm")]
 use yew::{html, Classes, Component, Context, Html, NodeRef, Properties};
 
+#[cfg(feature = "yew-wasm")]
+use crate::source::ToDom;
+
 #[derive(Default, PartialEq, Eq, Debug, Serialize, Deserialize)]
 pub struct Markup {
     pub text: String,
@@ -101,12 +104,11 @@ impl Display for MarkupLang {
     }
 }
 
-impl Markup {
-    /// Creates the VDOM representation of the `Markup`.
-    #[cfg(feature = "yew-wasm")]
-    pub fn to_dom(&self) -> Html {
+#[cfg(feature = "yew-wasm")]
+impl ToDom for Markup {
+    fn to_dom(self) -> Html {
         match self.lang {
-            MarkupLang::Html => html!(<RawHtml inner_html={self.text.to_owned()}/>),
+            MarkupLang::Html => html!(<RawHtml inner_html={self.text}/>),
             MarkupLang::Md => render_markdown(self.text.as_str()),
         }
     }

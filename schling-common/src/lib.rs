@@ -4,7 +4,6 @@ pub mod invoke;
 #[cfg(feature = "yew-wasm")]
 pub mod key;
 pub mod markup;
-#[cfg(feature = "yew-wasm")]
 pub mod source;
 
 #[cfg(test)]
